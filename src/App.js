@@ -22,7 +22,7 @@ function App() {
           <main className="content">
             <Topbar setIsSidebar={setIsSidebar} />
             <Routes>
-              <Route path="/" element={<Team />} />
+              <Route path="/db-demo" element={<Team />} />
               <Route path="/j01" element={<Team />} />
               <Route path="/j02" element={<Contacts />} />
               <Route path="/j03" element={<Invoices />} />

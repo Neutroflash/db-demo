@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -6,17 +6,18 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
+  Typography,
   DialogTitle,
   TextField,
   Select,
+  Paper,
+  Grid,
   MenuItem,
   useTheme,
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
-import { mockDataContacts } from "../../data/mockData";
 import Header from "../../components/Header";
-import { v4 as uuidv4 } from "uuid";
 
 const Team = () => {
   const theme = useTheme();
@@ -24,19 +25,26 @@ const Team = () => {
 
   const [openDialog, setOpenDialog] = useState(false);
   const [rowData, setRowData] = useState({});
+  const [selectedRow, setSelectedRow] = useState({});
   const [editMode, setEditMode] = useState(false);
   const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
-  const [dataContacts, setDataContacts] = useState(mockDataContacts); // Inicializa dataContacts con mockDataContacts
+  const [dataContacts, setDataContacts] = useState([]);
+  const backendUrl = "http://localhost:3000/api/v1/postgres";
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = () => {
+    fetch(backendUrl)
+      .then((response) => response.json())
+      .then((data) => setDataContacts(data))
+      .catch((error) => console.error("Error fetching data:", error));
+  };
 
   const handleDeleteRow = (row) => {
     setRowData(row);
     setConfirmDeleteDialogOpen(true);
-  };
-
-  const handleAddRow = () => {
-    setRowData({});
-    setEditMode(false);
-    setOpenDialog(true);
   };
 
   const handleEditRow = (row) => {
@@ -58,15 +66,25 @@ const Team = () => {
     setOpenDialog(false);
   };
 
-  const generateUniqueId = () => {
-    return uuidv4();
-  };
-
   const handleDeleteConfirmed = () => {
-    const updatedRows = dataContacts.filter((r) => r.j01 !== rowData.j01);
-    setDataContacts(updatedRows);
-    setOpenDialog(false);
-    setConfirmDeleteDialogOpen(false);
+    fetch(`http://localhost:3000/api/v1/postgres/:id`, {
+      method: "DELETE",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to delete record");
+        }
+        return response.json();
+      })
+      .then(() => {
+        const updatedRows = dataContacts.filter((r) => r.j01 !== rowData.j01);
+        setDataContacts(updatedRows);
+        setOpenDialog(false);
+        setConfirmDeleteDialogOpen(false);
+      })
+      .catch((error) => {
+        console.error("Error deleting record:", error);
+      });
   };
 
   const columns = [
@@ -185,33 +203,9 @@ const Team = () => {
     },
   ];
 
-  const j03Options = Array.from(
-    new Set(mockDataContacts.map((row) => row.j03))
-  );
-  const j04Options = Array.from(
-    new Set(mockDataContacts.map((row) => row.j04))
-  );
-
   return (
     <Box m="20px">
       <Header title="J01_COMM" subtitle="Data List of J01_COMM" />
-      <Box
-        display="flex"
-        justifyContent="flex-end"
-        alignItems="center"
-        mb="20px"
-      >
-        <Box
-          display="flex"
-          justifyContent="flex-end"
-          alignItems="center"
-          mb="20px"
-        >
-          <Button variant="contained" size="small" onClick={handleAddRow}>
-            Add Row
-          </Button>
-        </Box>
-      </Box>
       <Box
         m="40px 0 0 0"
         height="75vh"
@@ -244,6 +238,52 @@ const Team = () => {
           },
         }}
       >
+        <Paper elevation={3} style={{ padding: "20px" }}>
+          <Grid container spacing={2}>
+            <Grid
+              item
+              xs={3}
+              sx={{ display: "flex", flexDirection: "column", gap: "30px" }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                 <Typography sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  J01:{" "}
+                  <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#FFBAAB",
+                        minWidth: "40px",
+                        minHeight: "40px",
+                        display: "inline-block",
+                        backgroundColor: "#FFD3D3",
+                      }}
+                    >
+                      {selectedRow.j01 || ""}</Box>
+                 </Typography>
+                 <Typography>Ordine Cliente: </Typography>
+                 <Typography>Titolo: </Typography>
+                 <Typography>Note: </Typography>
+                 </Box>
+                 <Typography>Data-oridne: </Typography>
+                 <Typography>Ordine-Imp IVA: </Typography>
+                 <Typography>Cliente: </Typography>
+                 <Typography>Cartella: </Typography>
+                 <Typography>Link-ordine: </Typography>
+                 <Typography>Avanzamento: </Typography>
+                 <Typography>Ordine fatturato: </Typography>
+                 <Typography>offerta: </Typography>     
+            </Grid>
+          </Grid>
+        </Paper>
         <DataGrid
           getRowId={(row) => row.j01}
           rows={dataContacts}
@@ -267,13 +307,7 @@ const Team = () => {
                         setRowData({ ...rowData, j03: e.target.value })
                       }
                       style={{ width: "100%" }}
-                    >
-                      {j03Options.map((option) => (
-                        <MenuItem key={option} value={option}>
-                          {option}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    ></Select>
                   ) : column.field === "j04" ? (
                     <Select
                       fullWidth
@@ -282,13 +316,7 @@ const Team = () => {
                         setRowData({ ...rowData, j04: e.target.value })
                       }
                       style={{ width: "100%" }}
-                    >
-                      {j04Options.map((option) => (
-                        <MenuItem key={option} value={option}>
-                          {option}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    ></Select>
                   ) : (
                     <TextField
                       fullWidth

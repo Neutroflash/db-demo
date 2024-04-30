@@ -1,12 +1,25 @@
+import { useEffect, useState } from "react";
 import { Box, Typography, useTheme } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
-import { j03 } from "../../data/mockData";
 import Header from "../../components/Header";
 
 const Invoices = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const backendUrl = "http://localhost:3000/api/v1/j03";
+  const [dataContacts, setDataContacts] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = () => {
+    fetch(backendUrl)
+      .then((response) => response.json())
+      .then((data) => setDataContacts(data))
+      .catch((error) => console.error("Error fetching data:", error));
+  };
 
   const columns = [
     { field: "j03", headerName: "j03", flex: 0.5 },
@@ -68,7 +81,7 @@ const Invoices = () => {
       >
         <DataGrid
           getRowId={(row) => row.j03}
-          rows={j03}
+          rows={dataContacts}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
         />

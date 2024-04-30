@@ -1,12 +1,25 @@
+import { useEffect, useState } from "react";
 import { Box, Typography, useTheme } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
-import { j04 } from "../../data/mockData";
 import Header from "../../components/Header";
 
 const J04 = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [dataContacts, setDataContacts] = useState([]);
+  const backendUrl = "http://localhost:3000/api/v1/j04";
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = () => {
+    fetch(backendUrl)
+      .then((response) => response.json())
+      .then((data) => setDataContacts(data))
+      .catch((error) => console.error("Error fetching data:", error));
+  };
 
   const columns = [
     { field: "j04", headerName: "j04", flex: 0.5 },
@@ -63,7 +76,7 @@ const J04 = () => {
       >
         <DataGrid
           getRowId={(row) => row.j04}
-          rows={j04}
+          rows={dataContacts}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
         />

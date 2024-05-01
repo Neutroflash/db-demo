@@ -18,6 +18,7 @@ import {
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
+import Checkbox from "@mui/material/Checkbox";
 
 const Team = () => {
   const theme = useTheme();
@@ -29,16 +30,35 @@ const Team = () => {
   const [editMode, setEditMode] = useState(false);
   const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
   const [dataContacts, setDataContacts] = useState([]);
+  const [j04Options, setJ04Options] = useState([]);
+  const [selectedJ01, setSelectedJ01] = useState("");
+
+  const [j03Values, setJ03Values] = useState([]);
   const backendUrl = "http://localhost:3000/api/v1/postgres";
+  const fecha = selectedRow.j1dat ? new Date(selectedRow.j1dat) : null;
+  const fechaFormateada = fecha ? fecha.toISOString().split("T")[0] : "";
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    fetch(`http://localhost:3000/api/v1/j04`)
+      .then((response) => response.json())
+      .then((data) => {
+        setJ04Options(data);
+      })
+      .catch((error) => console.error("Error fetching j04 options:", error));
+  }, []);
+
   const fetchData = () => {
     fetch(backendUrl)
       .then((response) => response.json())
-      .then((data) => setDataContacts(data))
+      .then((data) => {
+        setDataContacts(data);
+        const uniqueJ03Values = [...new Set(data.map((row) => row.j03))];
+        setJ03Values(uniqueJ03Values);
+      })
       .catch((error) => console.error("Error fetching data:", error));
   };
 
@@ -51,6 +71,19 @@ const Team = () => {
     setRowData(row);
     setEditMode(true);
     setOpenDialog(true);
+  };
+
+  const handleCartelleChange = (value) => {
+    // Buscar el registro en la tabla j01 que corresponde al valor seleccionado en j04
+    const relatedJ01Row = dataContacts.find((row) => row.j04 === value);
+  
+    if (relatedJ01Row) {
+      // Actualizar los campos de selectedRow basados en el registro encontrado
+      setSelectedRow((prev) => ({
+        ...prev,
+        ...relatedJ01Row,
+      }));
+    }
   };
 
   const handleSaveRow = () => {
@@ -86,6 +119,34 @@ const Team = () => {
         console.error("Error deleting record:", error);
       });
   };
+
+  const handleClientiChange = (value) => {
+    const rowData = getRowDataByJ03(value);
+    setSelectedRow((prev) => ({
+      ...prev,
+      j03: value,
+      ...rowData,
+    }));
+  };
+
+  const handleJ04Change = (value) => {
+  // Buscar el registro en la tabla j01 que corresponde al valor seleccionado en j04
+  const relatedJ01Row = dataContacts.find((row) => row.j04 === value);
+
+  if (relatedJ01Row) {
+    // Actualizar los campos de selectedRow basados en el registro encontrado
+    setSelectedRow((prev) => ({
+      ...prev,
+      ...relatedJ01Row,
+    }));
+  }
+};
+
+  const getRowDataByJ03 = (j03Value) => {
+    const selectedRow = dataContacts.find((row) => row.j03 === j03Value);
+    return selectedRow ? selectedRow : {};
+  };
+  
 
   const columns = [
     { field: "j01", headerName: "j01", flex: 0.5 },
@@ -245,6 +306,7 @@ const Team = () => {
               xs={3}
               sx={{ display: "flex", flexDirection: "column", gap: "30px" }}
             >
+              {/* J01 */}
               <Box
                 sx={{
                   display: "flex",
@@ -252,35 +314,330 @@ const Team = () => {
                   justifyContent: "space-between",
                 }}
               >
-                 <Typography sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                  J01:{" "}
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", gap: "5px" }}
+                >
+                  J01:
                   <Box
+                    component="span"
+                    sx={{
+                      border: 1,
+                      padding: 1,
+                      borderRadius: "5px",
+                      borderColor: "#FFBAAB",
+                      minWidth: "70px",
+                      minHeight: "20px",
+                      display: "inline-block",
+                      backgroundColor: "#FFD3D3",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {selectedRow.j01 || ""}
+                  </Box>
+                </Typography>
+                {/* Ordine Cliente */}
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", gap: "5px" }}
+                >
+                  Ordine Cliente:{" "}
+                  <Box
+                    component="span"
+                    sx={{
+                      border: 1,
+                      padding: 1,
+                      borderRadius: "5px",
+                      borderColor: "#FFBAAB",
+                      minWidth: "170px",
+                      minHeight: "20px",
+                      display: "inline-block",
+                      backgroundColor: "#FFD3D3",
+                      fontSize: "11px",
+                    }}
+                  >
+                    {selectedRow.j1rif_client || ""}
+                  </Box>{" "}
+                </Typography>
+              </Box>
+              {/* Titolo */}
+              <Box>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", gap: "1px" }}
+                >
+                  Titolo:
+                  <Box
+                    component="span"
+                    sx={{
+                      border: 1,
+                      padding: 1,
+                      borderRadius: "5px",
+                      borderColor: "#FFBAAB",
+                      minWidth: "90%",
+                      minHeight: "20px",
+                      display: "inline-block",
+                      backgroundColor: "#FFD3D3",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {selectedRow.j1titol || ""}
+                  </Box>{" "}
+                </Typography>
+              </Box>
+              {/* Note */}
+              <Box>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", gap: "5px" }}
+                >
+                  Note:
+                  <Box
+                    component="span"
+                    sx={{
+                      border: 1,
+                      padding: 1,
+                      borderRadius: "5px",
+                      borderColor: "#FFBAAB",
+                      minWidth: "90%",
+                      minHeight: "90px",
+                      display: "inline-block",
+                      backgroundColor: "#FFD3D3",
+                      fontSize: "13px",
+                    }}
+                  >
+                    {selectedRow.j1note || ""}
+                  </Box>
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid
+              item
+              xs={3}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              {/* Data-ordine */}
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", gap: "5px" }}
+                >
+                  Data-ordine:{" "}
+                  <Box
+                    component="span"
+                    sx={{
+                      border: 1,
+                      padding: 1,
+                      borderRadius: "5px",
+                      borderColor: "#FFBAAB",
+                      minWidth: "70px",
+                      minHeight: "20px",
+                      display: "inline-block",
+                      backgroundColor: "#FFD3D3",
+                      fontSize: "10px",
+                    }}
+                  >
+                    {fechaFormateada ? fechaFormateada : ""}
+                  </Box>
+                </Typography>
+                {/* Ordine-Imp IVA */}
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", gap: "5px" }}
+                >
+                  Ordine-Imp IVA:
+                  <Box
+                    component="span"
+                    sx={{
+                      border: 1,
+                      padding: 1,
+                      borderRadius: "5px",
+                      borderColor: "#FFBAAB",
+                      minWidth: "70px",
+                      minHeight: "20px",
+                      display: "inline-block",
+                      backgroundColor: "#FFD3D3",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {selectedRow.j1impiva || ""}
+                  </Box>{" "}
+                </Typography>
+              </Box>
+              {/* Clienti */}
+              <Box>
+                <Typography
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  Clienti:
+                  <Select
+                    value={selectedRow.j03 || ""}
+                    onChange={(e) => handleClientiChange(e.target.value)}
+                    sx={{
+                      minWidth: "300px",
+                      fontSize: "12px",
+                      backgroundColor: "#FBFF80",
+                    }}
+                  >
+                    {j03Values.map((value) => (
+                      <MenuItem key={value} value={value}>
+                        {value}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Typography>
+              </Box>
+              {/* Cartella */}
+              <Box>
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      textAlign: "center",
+                    }}
+                  >
+                    Cartella:{" "}
+                    <Box
                       component="span"
                       sx={{
                         border: 1,
                         padding: 1,
                         borderRadius: "5px",
-                        borderColor: "#FFBAAB",
-                        minWidth: "40px",
-                        minHeight: "40px",
+                        borderColor: "#C9FFB5",
+                        minWidth: "70px",
+                        minHeight: "50px",
                         display: "inline-block",
-                        backgroundColor: "#FFD3D3",
+                        backgroundColor: "#C9FFB5",
+                        fontSize: "12px",
                       }}
                     >
-                      {selectedRow.j01 || ""}</Box>
-                 </Typography>
-                 <Typography>Ordine Cliente: </Typography>
-                 <Typography>Titolo: </Typography>
-                 <Typography>Note: </Typography>
-                 </Box>
-                 <Typography>Data-oridne: </Typography>
-                 <Typography>Ordine-Imp IVA: </Typography>
-                 <Typography>Cliente: </Typography>
-                 <Typography>Cartella: </Typography>
-                 <Typography>Link-ordine: </Typography>
-                 <Typography>Avanzamento: </Typography>
-                 <Typography>Ordine fatturato: </Typography>
-                 <Typography>offerta: </Typography>     
+                      {selectedRow.j04 || ""}
+                    </Box>
+                    <Select
+                      value={selectedRow.j04 || ""}
+                      onChange={(e) => {
+                        handleJ04Change(e.target.value); // Aquí se llama a handleJ04Change
+                      }}
+                      sx={{ minWidth: "50%", fontSize: "12px", background: "#C9FFB5" }}
+                    >
+                      {j04Options.map((option) => (
+                        <MenuItem key={option.j04} value={option.j04}>
+                          {option.cartdescr}{" "}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </Typography>
+              </Box>
+            </Grid>
+            <Grid
+              item
+              xs={3}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              {/* Link-ordine */}
+              <Typography
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-evenly",
+                }}
+              >
+                Link-ordine:{" "}
+                <Box
+                  component="span"
+                  sx={{
+                    border: 1,
+                    padding: 1,
+                    borderRadius: "5px",
+                    borderColor: "#FFBAAB",
+                    minWidth: "70px",
+                    minHeight: "20px",
+                    display: "inline-block",
+                    backgroundColor: "#FFD3D3",
+                    fontSize: "10px",
+                  }}
+                >
+                  {selectedRow.link_ordine || ""}
+                </Box>
+              </Typography>
+              {/* Avanzamento */}
+              <Typography
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-evenly",
+                }}
+              >
+                Avanzamento:{" "}
+                <Box
+                  component="span"
+                  sx={{
+                    border: 1,
+                    padding: 1,
+                    borderRadius: "5px",
+                    borderColor: "#FFBAAB",
+                    minWidth: "70px",
+                    minHeight: "20px",
+                    display: "inline-block",
+                    backgroundColor: "#FFD3D3",
+                    fontSize: "10px",
+                  }}
+                >
+                  {selectedRow.j1_avanz}
+                </Box>
+              </Typography>
+
+              {/* offerta */}
+              <Typography
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-evenly",
+                  gap: "30px",
+                }}
+              >
+                offerta:{" "}
+                <Box
+                  component="span"
+                  sx={{
+                    border: 1,
+                    padding: 1,
+                    borderRadius: "5px",
+                    borderColor: "#FFBAAB",
+                    minWidth: "70px",
+                    minHeight: "20px",
+                    display: "inline-block",
+                    backgroundColor: "#FFD3D3",
+                    fontSize: "10px",
+                  }}
+                >
+                  {selectedRow.j1rif_offer}
+                </Box>
+              </Typography>
+              {/* Ordine fatturato */}
+              <Typography
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-evenly",
+                }}
+              >
+                {" "}
+                Ordine fatturato:{" "}
+                <Checkbox
+                  checked={selectedRow.sel}
+                  disabled
+                  color="primary"
+                  inputProps={{ "aria-label": "controlled" }}
+                />
+              </Typography>
             </Grid>
           </Grid>
         </Paper>
@@ -289,6 +646,12 @@ const Team = () => {
           rows={dataContacts}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
+          onRowClick={(params) => {
+            const selectedJ01 = params.row.j01;
+            setSelectedJ01(selectedJ01);
+            console.log("Selected J01:", selectedJ01);
+            setSelectedRow(params.row);
+          }}
         />
       </Box>
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>

@@ -6,6 +6,7 @@ import IconButton from "@mui/material/IconButton";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
+import Checkbox from "@mui/material/Checkbox";
 import { useTheme } from "@mui/material";
 
 const Contacts = () => {
@@ -17,12 +18,17 @@ const Contacts = () => {
   const [selectedId, setSelectedId] = useState("");
   const [selectedJ04, setSelectedJ04] = useState("");
   const [selectedJ03, setSelectedJ03] = useState({});
-  const [selectedJ02, setSelectedJ02] = useState(null);
+  const [selectedJ02Click, setSelectedJ02Click] = useState(null);
   const [dataJ03, setDataJ03] = useState([]);
   const [expanded, setExpanded] = useState(false);
-
+  const fecha = selectedRow.j2dat ? new Date(selectedRow.j2dat) : null;
+  const fecha2 = selectedRow.j2_data_saldo
+    ? new Date(selectedRow.j2_data_saldo)
+    : null;
+  const fechaformat2 = fecha2 ? fecha2.toISOString().split("T")[0] : "";
+  const fechaFormateada = fecha ? fecha.toISOString().split("T")[0] : "";
   const handleExpandClick = () => {
-    setExpanded(!expanded);
+    setExpanded((prevExpanded) => !prevExpanded);
   };
 
   useEffect(() => {
@@ -315,7 +321,7 @@ const Contacts = () => {
                       }}
                     >
                       {" "}
-                      {selectedRow.j2dat || ""}
+                      {fechaFormateada ? fechaFormateada : ""}
                     </Box>
                   </Typography>
                 </Box>
@@ -397,7 +403,9 @@ const Contacts = () => {
                       marginLeft: "8px",
                     }}
                   >
-                    {selectedRow.j2pcnpaia || ""}
+                    {selectedRow.j2pcnpaia
+                      ? `${selectedRow.j2pcnpaia * 100}%`
+                      : ""}
                   </Box>
 
                   <Typography>J2Cnp aia:</Typography>
@@ -451,7 +459,7 @@ const Contacts = () => {
                       marginLeft: "8px",
                     }}
                   >
-                    {selectedRow.j2piva || ""}
+                    {selectedRow.j2piva ? `${selectedRow.j2piva * 100}%` : ""}
                   </Box>
 
                   <Typography>J2Iva:</Typography>
@@ -527,7 +535,11 @@ const Contacts = () => {
                   }}
                 >
                   <Typography
-                    sx={{ display: "flex", justifyContent: "space-between" }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
                   >
                     Part. Iva:{" "}
                     <Box
@@ -548,7 +560,11 @@ const Contacts = () => {
                     </Box>
                   </Typography>
                   <Typography
-                    sx={{ display: "flex", justifyContent: "space-between" }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
                   >
                     Cod. Fisc:{" "}
                     <Box
@@ -569,7 +585,11 @@ const Contacts = () => {
                     </Box>
                   </Typography>
                   <Typography
-                    sx={{ display: "flex", justifyContent: "space-between" }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
                   >
                     NomIndirizzo:{" "}
                     <Box
@@ -584,13 +604,19 @@ const Contacts = () => {
                         display: "inline-block",
                         backgroundColor: "#FBFF80",
                         marginLeft: "8px",
+                        fontSize: "12px",
                       }}
                     >
                       {selectedJ03.nomindirizzo || ""}
                     </Box>
                   </Typography>
                   <Typography
-                    sx={{ display: "flex", justifyContent: "space-between" }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      alignItems: "center",
+                    }}
                   >
                     Num CAP:{" "}
                     <Box
@@ -611,7 +637,11 @@ const Contacts = () => {
                     </Box>
                   </Typography>
                   <Typography
-                    sx={{ display: "flex", justifyContent: "space-between" }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
                   >
                     Provincia:{" "}
                     <Box
@@ -632,7 +662,11 @@ const Contacts = () => {
                     </Box>
                   </Typography>
                   <Typography
-                    sx={{ display: "flex", justifyContent: "space-between" }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
                   >
                     Citta:{" "}
                     <Box
@@ -828,7 +862,7 @@ const Contacts = () => {
                             fontSize: "11px",
                           }}
                         >
-                          {selectedRow.j2_data_saldo || ""}
+                          {fechaformat2 ? fechaformat2 : ""}
                         </Box>
                       </Typography>
                       <Typography
@@ -909,31 +943,14 @@ const Contacts = () => {
                           {selectedRow.j2_da_incassare || ""}
                         </Box>
                       </Typography>
-                      <Typography
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                        }}
-                      >
+                      <Typography>
                         pag-saldo:{" "}
-                        <Box
-                          component="span"
-                          sx={{
-                            border: 1,
-                            padding: 1,
-                            borderRadius: "5px",
-                            borderColor: "#DCDCDC",
-                            minWidth: "70px",
-                            minHeight: "1 0px",
-                            display: "inline-block",
-                            backgroundColor: "#DCDCDC",
-                            marginLeft: "8px",
-                            fontSize: "11px",
-                          }}
-                        >
-                          {selectedRow.pag_Saldo || ""}
-                        </Box>
+                        <Checkbox
+                          checked={selectedRow.pag_saldo}
+                          disabled
+                          color="primary"
+                          inputProps={{ "aria-label": "controlled" }}
+                        />
                       </Typography>
                       <Typography>
                         previs: {selectedRow.previs || ""}
@@ -946,12 +963,22 @@ const Contacts = () => {
           </Collapse>
         </Paper>
         <DataGrid
+          sx={{ height: expanded ? "300px" : "100%" }}
           getRowId={(row) => row.j02}
           rows={dataContacts}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
-          onRowClick={(event, row) => {
-            setSelectedJ02(row.j02);
+          onRowClick={(params) => {
+            const selectedClick = params.row.j02;
+            console.log("Selected J02:", selectedClick);
+            setSelectedJ02Click(selectedClick);
+            const selectedRow =
+              dataContacts.find((row) => row.j02 === selectedClick) || {};
+            setSelectedId(selectedClick);
+            setSelectedRow(selectedRow);
+            setSelectedJ04(selectedRow.j04 || "");
+            fetchJ03Data(selectedClick, selectedRow.j03 || "");
+            setExpanded(true);
           }}
         />
       </Box>

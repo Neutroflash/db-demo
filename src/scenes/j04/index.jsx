@@ -1,5 +1,20 @@
 import { useEffect, useState } from "react";
-import { Box, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  Typography,
+  DialogTitle,
+  TextField,
+  Select,
+  Paper,
+  Grid,
+  MenuItem,
+  useTheme,
+} from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
@@ -8,6 +23,7 @@ const J04 = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [dataContacts, setDataContacts] = useState([]);
+  const [selectedRow, setSelectedRow] = useState({}); 
   const backendUrl = "http://localhost:3000/api/v1/j04";
 
   useEffect(() => {
@@ -74,11 +90,59 @@ const J04 = () => {
           },
         }}
       >
+        <Paper elevation={3} style={{ padding: "20px" }}>
+          <Grid container spacing={2}>
+            <Grid
+              item
+              xs={3}
+              sx={{ display: "flex", flexDirection: "column", gap: "30px" }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                 <Typography sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  J04:{" "}
+                  <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#FFBAAB",
+                        minWidth: "40px",
+                        minHeight: "40px",
+                        display: "inline-block",
+                        backgroundColor: "#FFD3D3",
+                      }}
+                    >
+                      {selectedRow.j01 || ""}</Box>
+                 </Typography>
+                 <Typography>Data: </Typography>
+                 <Typography>Nominativo: </Typography>
+                 <Typography>Old Name: </Typography>
+                 </Box>
+                 <Typography>Descrizione: </Typography>
+                 <Typography>Note: </Typography>
+                 <Typography>CartRef: </Typography>
+                 <Typography>CartRif: </Typography>
+                 <Typography>CartCoord: </Typography>
+                 <Typography>CartPag: </Typography>  
+            </Grid>
+          </Grid>
+        </Paper>
         <DataGrid
           getRowId={(row) => row.j04}
           rows={dataContacts}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
+          onRowClick={(params) => {
+            const selectedClick = params.row.j04;
+            console.log("Selected Click:", selectedClick);
+          }}
         />
       </Box>
     </Box>

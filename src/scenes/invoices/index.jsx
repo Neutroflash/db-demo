@@ -1,18 +1,36 @@
 import { useEffect, useState } from "react";
-import { Box, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  Typography,
+  DialogTitle,
+  TextField,
+  Select,
+  Paper,
+  Grid,
+  MenuItem,
+  useTheme,
+} from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
+import IconButton from "@mui/material/IconButton";
+import Collapse from "@mui/material/Collapse";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const Invoices = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [selectedRow, setSelectedRow] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const backendUrl = "http://localhost:3000/api/v1/j03";
   const [dataContacts, setDataContacts] = useState([]);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const [visibleData, setVisibleData] = useState([]);
 
   const fetchData = () => {
     fetch(backendUrl)
@@ -21,23 +39,61 @@ const Invoices = () => {
       .catch((error) => console.error("Error fetching data:", error));
   };
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleExpandClick = () => {
+    setExpanded((prevExpanded) => !prevExpanded);
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSaveClick = () => {
+    // Crea una copia de los datos actuales
+    const updatedDataContacts = [...dataContacts];
+    // Encuentra el índice de la fila que se está editando
+    const rowIndex = updatedDataContacts.findIndex(
+      (row) => row.j03 === selectedRow.j03
+    );
+    // Actualiza los datos de la fila editada en la copia de los datos
+    updatedDataContacts[rowIndex] = selectedRow;
+    // Actualiza el estado con los datos actualizados
+    setDataContacts(updatedDataContacts);
+    // Finaliza la edición
+    setIsEditing(false);
+    console.log("Datos actualizados:", selectedRow);
+  };
+
+  const handleRowClick = (params) => {
+    const selectedClick = params.row.j03;
+    const selectedRowData = dataContacts.find(
+      (row) => row.j03 === selectedClick
+    );
+    setSelectedRow(selectedRowData || {});
+    console.log("selected row: ", selectedClick);
+  };
+
   const columns = [
-    { field: "j03", headerName: "j03", flex: 0.5 },
-    { field: "nomin", headerName: "nomin" },
-    { field: "plva", headerName: "plva", flex: 1 },
+    { field: "j03", headerName: "j03", flex: 0.1 },
+    { field: "nomin", headerName: "nomin", flex: 1.5 },
+    { field: "plva", headerName: "plva", flex: 0.65 },
     {
       field: "cfisc",
       headerName: "cfisc",
       type: "number",
       headerAlign: "left",
       align: "left",
+      flex: 0.9,
     },
-    { field: "nomcitta", headerName: "nomcitta", flex: 1 },
-    { field: "nomcap", headerName: "nomcap", flex: 1 },
-    { field: "nomindirizzo", headerName: "nomindirizzo", flex: 1 },
-    { field: "nomprov", headerName: "nomprov", flex: 1 },
-    { field: "nomnote", headerName: "nomnote", flex: 1 },
-    { field: "codident", headerName: "codident", flex: 1 },
+    { field: "nomcitta", headerName: "nomcitta", flex: 1.1 },
+    { field: "nomcap", headerName: "nomcap", flex: 0.5 },
+    { field: "nomindirizzo", headerName: "nomindirizzo", flex: 1.1 },
+    { field: "nomprov", headerName: "nomprov", flex: 0.4 },
+    { field: "nomnote", headerName: "nomnote", flex: 1.5 },
+    { field: "codident", headerName: "codident", flex: 0.5 },
     { field: "pec", headerName: "pec", flex: 1 },
   ];
 
@@ -79,11 +135,434 @@ const Invoices = () => {
           },
         }}
       >
+        <Paper elevation={3} style={{ padding: "20px" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography sx={{ fontWeight: "bold" }} variant="h4">
+              J03 DETAILS
+            </Typography>
+            <IconButton
+              onClick={handleExpandClick}
+              aria-expanded={expanded}
+              aria-label="expand"
+            >
+              <ExpandMoreIcon />
+            </IconButton>
+          </Box>
+          <Collapse in={expanded} timeout="auto" unmountOnExit>
+            <Grid container spacing={2}>
+              <Grid item xs={3} sx={{display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "15px"}}>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around"}}
+                >
+                  J03:{" "}
+                  <Box
+                    component="span"
+                    sx={{
+                      border: 1,
+                      padding: 1,
+                      borderRadius: "5px",
+                      borderColor: "#B7B7B7",
+                      width: "60px",
+                      minHeight: "30px",
+                      display: "inline-block",
+                      backgroundColor: "#FFFFF",
+                      marginLeft: "100px"
+                    }}
+                  >
+                    {selectedRow.j03 || ""}
+                  </Box>
+                </Typography>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                >
+                  Nomin:{" "}
+                  {isEditing ? (
+                    <TextField
+                      value={selectedRow.nomin || ""}
+                      onChange={(e) =>
+                        setSelectedRow((prev) => ({
+                          ...prev,
+                          nomin: e.target.value,
+                        }))
+                      }
+                      variant="outlined"
+                      size="small"
+                    />
+                  ) : (
+                    <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#B7B7B7",
+                        minWidth: "150px",
+                        minHeight: "30px",
+                        display: "inline-block",
+                        backgroundColor: "#FFFFF",
+                      }}
+                    >
+                      {selectedRow.nomin || ""}{" "}
+                    </Box>
+                  )}
+                </Typography>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                >
+                  Plva:{" "}
+                  {isEditing ? (
+                    <TextField
+                      value={selectedRow.plva || ""}
+                      onChange={(e) =>
+                        setSelectedRow((prev) => ({
+                          ...prev,
+                          plva: e.target.value,
+                        }))
+                      }
+                      variant="outlined"
+                      size="small"
+                    />
+                  ) : (
+                    <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#B7B7B7",
+                        minWidth: "150px",
+                        minHeight: "30px",
+                        marginLeft: "15px",
+                        display: "inline-block",
+                        backgroundColor: "#FFFFF",
+                      }}
+                    >
+                      {selectedRow.plva || ""}
+                    </Box>
+                  )}
+                </Typography>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                >
+                  Cfisc:{" "}
+                  {isEditing ? (
+                    <TextField
+                      value={selectedRow.cfisc || ""}
+                      onChange={(e) =>
+                        setSelectedRow((prev) => ({
+                          ...prev,
+                          cfisc: e.target.value,
+                        }))
+                      }
+                      variant="outlined"
+                      size="small"
+                    />
+                  ) : (
+                    <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#B7B7B7",
+                        width: "150px",
+                        minHeight: "30px",
+                        marginLeft: "5px",
+                        display: "inline-block",
+                        backgroundColor: "#FFFFF",
+                      }}
+                    >
+                      {selectedRow.cfisc || ""}
+                    </Box>
+                  )}
+                </Typography>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                >
+                  Nomcitta:{" "}
+                  {isEditing ? (
+                    <TextField
+                      value={selectedRow.nomcitta || ""}
+                      onChange={(e) =>
+                        setSelectedRow((prev) => ({
+                          ...prev,
+                          nomcitta: e.target.value,
+                        }))
+                      }
+                      variant="outlined"
+                      size="small"
+                      multiline
+                      rows={3}
+                    />
+                  ) : (
+                    <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#B7B7B7",
+                        width: "150px",
+                        minHeight: "30px",
+                        display: "inline-block",
+                        backgroundColor: "#FFFFF",
+                      }}
+                    >
+                      {selectedRow.nomcitta || ""}
+                    </Box>
+                  )}
+                </Typography>
+              </Grid>
+              <Grid item xs={3} sx={{display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "15px"}}>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                >
+                  Nomcap:{" "}
+                  {isEditing ? (
+                    <TextField
+                      value={selectedRow.nomcap || ""}
+                      onChange={(e) =>
+                        setSelectedRow((prev) => ({
+                          ...prev,
+                          nomcap: e.target.value,
+                        }))
+                      }
+                      variant="outlined"
+                      size="small"
+                    />
+                  ) : (
+                    <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#B7B7B7",
+                        minWidth: "150px",
+                        minHeight: "30px",
+                        display: "inline-block",
+                        backgroundColor: "#FFFFF",
+                      }}
+                    >
+                      {selectedRow.nomcap || ""}
+                    </Box>
+                  )}
+                </Typography>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                >
+                  Nomindirizzo:{" "}
+                  {isEditing ? (
+                    <TextField
+                      value={selectedRow.nomindirizzo || ""}
+                      onChange={(e) =>
+                        setSelectedRow((prev) => ({
+                          ...prev,
+                          nomindirizzo: e.target.value,
+                        }))
+                      }
+                      variant="outlined"
+                      size="small"
+                    />
+                  ) : (
+                    <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#B7B7B7",
+                        minWidth: "150px",
+                        minHeight: "30px",
+                        display: "inline-block",
+                        backgroundColor: "#FFFFF",
+                      }}
+                    >
+                      {selectedRow.nomindirizzo || ""}
+                    </Box>
+                  )}
+                </Typography>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                >
+                  Nomprov:{" "}
+                  {isEditing ? (
+                    <TextField
+                      value={selectedRow.nomprov || ""}
+                      onChange={(e) =>
+                        setSelectedRow((prev) => ({
+                          ...prev,
+                          nomprov: e.target.value,
+                        }))
+                      }
+                      variant="outlined"
+                      size="small"
+                    />
+                  ) : (
+                    <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#B7B7B7",
+                        minWidth: "150px",
+                        minHeight: "30px",
+                        display: "inline-block",
+                        backgroundColor: "#FFFFF",
+                      }}
+                    >
+                      {selectedRow.nomprov || ""}
+                    </Box>
+                  )}
+                </Typography>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                >
+                  Nomnote:{" "}
+                  {isEditing ? (
+                    <TextField
+                      value={selectedRow.nomnote || ""}
+                      onChange={(e) =>
+                        setSelectedRow((prev) => ({
+                          ...prev,
+                          nomnote: e.target.value,
+                        }))
+                      }
+                      variant="outlined"
+                      size="small"
+                    />
+                  ) : (
+                    <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#B7B7B7",
+                        minWidth: "150px",
+                        minHeight: "30px",
+                        display: "inline-block",
+                        backgroundColor: "#FFFFF",
+                      }}
+                    >
+                      {selectedRow.nomnote || ""}
+                    </Box>
+                  )}
+                </Typography>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                >
+                  Codident:{" "}
+                  {isEditing ? (
+                    <TextField
+                      value={selectedRow.codident || ""}
+                      onChange={(e) =>
+                        setSelectedRow((prev) => ({
+                          ...prev,
+                          codident: e.target.value,
+                        }))
+                      }
+                      variant="outlined"
+                      size="small"
+                    />
+                  ) : (
+                    <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#B7B7B7",
+                        minWidth: "150px",
+                        minHeight: "30px",
+                        display: "inline-block",
+                        backgroundColor: "#FFFFF",
+                      }}
+                    >
+                      {selectedRow.codident || ""}
+                    </Box>
+                  )}
+                </Typography>
+                <Typography
+                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                >
+                  Pec:{" "}
+                  {isEditing ? (
+                    <TextField
+                      value={selectedRow.pec || ""}
+                      onChange={(e) =>
+                        setSelectedRow((prev) => ({
+                          ...prev,
+                          pec: e.target.value,
+                        }))
+                      }
+                      variant="outlined"
+                      size="small"
+                    />
+                  ) : (
+                    <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#B7B7B7",
+                        minWidth: "150px",
+                        minHeight: "30px",
+                        display: "inline-block",
+                        backgroundColor: "#FFFFF",
+                      }}
+                    >
+                      {selectedRow.pec || ""}
+                    </Box>
+                  )}
+                </Typography>
+              </Grid>
+              <Grid item xs={2}>
+                <Box
+                  sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
+                >
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleEditClick}
+                    sx={{ width: "60px" }}
+                  >
+                    Edit
+                  </Button>
+                  {isEditing && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleSaveClick}
+                      sx={{ width: "60px" }}
+                    >
+                      Save
+                    </Button>
+                  )}
+                </Box>
+              </Grid>
+            </Grid>
+          </Collapse>
+        </Paper>
+
         <DataGrid
+          sx={{ height: expanded ? "450px" : "100%" }}
           getRowId={(row) => row.j03}
           rows={dataContacts}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
+          onRowClick={(params) => {
+            handleRowClick(params);
+            setExpanded(true);
+          }}
         />
       </Box>
     </Box>

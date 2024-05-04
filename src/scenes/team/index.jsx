@@ -75,26 +75,39 @@ const Team = () => {
   };
 
   const handleClientiChange = (value) => {
-    const rowData = getRowDataByJ03(value);
-    setSelectedRow((prev) => ({
-      ...prev,
-      j03: value,
-      ...rowData,
-    }));
-  };
-
-  const handleJ04Change = (value) => {
-    // Buscar el registro en la tabla j01 que corresponde al valor seleccionado en j04
-    const relatedJ01Row = dataContacts.find((row) => row.j04 === value);
-
-    if (relatedJ01Row) {
-      // Actualizar los campos de selectedRow basados en el registro encontrado
+    if (isEditing) {
       setSelectedRow((prev) => ({
         ...prev,
-        ...relatedJ01Row,
+        j03: value,
+      }));
+    } else {
+      const rowData = getRowDataByJ03(value);
+      setSelectedRow((prev) => ({
+        ...prev,
+        j03: value,
+        ...rowData,
       }));
     }
   };
+
+  const handleJ04Change = (value) => {
+    if (isEditing) {
+      setSelectedRow((prev) => ({
+        ...prev,
+        j04: value,
+      }));
+    } else {
+      const relatedJ01Row = dataContacts.find((row) => row.j04 === value);
+  
+      if (relatedJ01Row) {
+        setSelectedRow((prev) => ({
+          ...prev,
+          ...relatedJ01Row,
+        }));
+      }
+    }
+  };
+  
 
   const getRowDataByJ03 = (j03Value) => {
     const selectedRow = dataContacts.find((row) => row.j03 === j03Value);
@@ -149,7 +162,7 @@ const Team = () => {
   };
 
   const columns = [
-    { field: "j01", headerName: "j01", flex: 0.2},
+    { field: "j01", headerName: "j01", flex: 0.2 },
     { field: "j03", headerName: "j03", flex: 1.4 },
     {
       field: "j04",
@@ -163,7 +176,7 @@ const Team = () => {
       type: "number",
       headerAlign: "left",
       align: "left",
-      flex: 0.7
+      flex: 0.7,
     },
     {
       field: "j1rif_offer",
@@ -243,7 +256,7 @@ const Team = () => {
     {
       field: "j1_av_data",
       headerName: "j1_av_data",
-      flex: 0.80,
+      flex: 0.8,
     },
   ];
 
@@ -477,7 +490,12 @@ const Team = () => {
                 {/* Data-ordine */}
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography
-                    sx={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "12px" }}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
+                      fontSize: "12px",
+                    }}
                   >
                     Data-ordine:{" "}
                     {isEditing ? (
@@ -516,7 +534,12 @@ const Team = () => {
 
                   {/* Ordine-Imp IVA */}
                   <Typography
-                    sx={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "12px" }}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
+                      fontSize: "12px",
+                    }}
                   >
                     Ordine-Imp IVA:
                     {isEditing ? (
@@ -547,7 +570,9 @@ const Team = () => {
                           fontSize: "12px",
                         }}
                       >
-                        {selectedRow.j1impiva ? `€ ${selectedRow.j1impiva}` : ""}
+                        {selectedRow.j1impiva
+                          ? `€ ${selectedRow.j1impiva}`
+                          : ""}
                       </Box>
                     )}
                   </Typography>
@@ -563,23 +588,45 @@ const Team = () => {
                     }}
                   >
                     Clienti:
-                    <Select
-                      value={selectedRow.j03 || ""}
-                      disabled={isEditing}
-                      onChange={(e) => handleClientiChange(e.target.value)}
-                      sx={{
-                        width: "300px",
-                        minHeight: "40px",
-                        fontSize: "11px",
-                        backgroundColor: "#FBFF80",
-                      }}
-                    >
-                      {j03Values.map((value) => (
-                        <MenuItem key={value} value={value}>
-                          {value}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    {isEditing ? (
+                      <Select
+                        value={selectedRow.j03 || ""}
+                        onChange={(e) =>
+                          handleClientiChange(e.target.value, "edit")
+                        }
+                        sx={{
+                          width: "300px",
+                          minHeight: "40px",
+                          fontSize: "11px",
+                          backgroundColor: "#FBFF80",
+                        }}
+                      >
+                        {j03Values.map((value) => (
+                          <MenuItem key={value} value={value}>
+                            {value}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    ) : (
+                      <Select
+                        value={selectedRow.j03 || ""}
+                        onChange={(e) =>
+                          handleClientiChange(e.target.value, "view")
+                        }
+                        sx={{
+                          width: "300px",
+                          minHeight: "40px",
+                          fontSize: "11px",
+                          backgroundColor: "#FBFF80",
+                        }}
+                      >
+                        {j03Values.map((value) => (
+                          <MenuItem key={value} value={value}>
+                            {value}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
                   </Typography>
                 </Box>
                 {/* Cartella */}
@@ -603,10 +650,10 @@ const Team = () => {
                         fontSize: "12px",
                       }}
                     >
-                      <Select
+                      {isEditing ? (
+                        <Select
                         value={selectedRow.j04 || ""}
-                        onChange={(e) => handleJ04Change(e.target.value)}
-                        disabled={isEditing}
+                        onChange={(e) => handleJ04Change(e.target.value, "edit")}
                         sx={{
                           fontSize: "12px",
                           backgroundColor: "#C9FFB5",
@@ -618,6 +665,23 @@ const Team = () => {
                           </MenuItem>
                         ))}
                       </Select>
+
+                      ):(
+                      <Select
+                        value={selectedRow.j04 || ""}
+                        onChange={(e) => handleJ04Change(e.target.value, "view")}
+                        sx={{
+                          fontSize: "12px",
+                          backgroundColor: "#C9FFB5",
+                        }}
+                      >
+                        {dataContacts.map((row) => (
+                          <MenuItem key={row.j04} value={row.j04}>
+                            {row.j04}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      )}
                     </Box>
                     <Typography>
                       <Box

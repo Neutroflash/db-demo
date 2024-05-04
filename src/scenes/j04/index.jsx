@@ -33,6 +33,7 @@ const J04 = () => {
   const [expanded, setExpanded] = useState(false);
   const backendUrl = "https://dbapirest.onrender.com/api/v1/j04";
   const [visibleData, setVisibleData] = useState([]);
+  const [selectedJ03, setSelectedJ03] = useState([]);
   const [loading, setLoading] = useState(false);
   const handleExpandClick = () => {
     setExpanded((prevExpanded) => !prevExpanded);
@@ -111,9 +112,18 @@ const J04 = () => {
 
   const handleNominativoChange = (e) => {
     const selectedJ03 = e.target.value;
-    const selectedRowData = dataContacts.find((row) => row.j03 === selectedJ03);
-    setSelectedRow(selectedRowData || {});
+  
+    if (isEditing) {
+      setSelectedRow((prev) => ({
+        ...prev,
+        j03: selectedJ03,
+      }));
+    } else {
+      const selectedRowData = dataContacts.find((row) => row.j03 === selectedJ03);
+      setSelectedRow(selectedRowData || {});
+    }
   };
+
 
   const handleSaveClick = () => {
     // Construir el objeto con los datos actualizados
@@ -282,20 +292,35 @@ const J04 = () => {
                   sx={{ display: "flex", alignItems: "center", gap: "5px" }}
                 >
                   Nominativo:
-                  <Select
-                    disabled={isEditing}
-                    sx={{ width: "390px", height: "30px" }}
-                    value={selectedRow.j03 || ""}
-                    onChange={handleNominativoChange}
-                  >
-                    {visibleData
-                      .filter((row) => row.j03 !== null)
-                      .map((row) => (
-                        <MenuItem key={row.j03} value={row.j03}>
-                          {row.j03}
-                        </MenuItem>
-                      ))}
-                  </Select>
+                  {isEditing ? (
+                    <Select
+                      sx={{ width: "390px", height: "30px" }}
+                      value={isEditing ? selectedRow.j03 || "" : selectedRow.j03 || ""}
+                      onChange={handleNominativoChange}
+                    >
+                      {visibleData
+                        .filter((row) => row.j03 !== null)
+                        .map((row) => (
+                          <MenuItem key={row.j03} value={row.j03}>
+                            {row.j03}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  ) : (
+                    <Select
+                      sx={{ width: "390px", height: "30px" }}
+                      value={selectedRow.j03 || ""}
+                      onChange={handleNominativoChange}
+                    >
+                      {visibleData
+                        .filter((row) => row.j03 !== null)
+                        .map((row) => (
+                          <MenuItem key={row.j03} value={row.j03}>
+                            {row.j03}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  )}
                 </Typography>
                 <Typography
                   sx={{ display: "flex", alignItems: "center", gap: "5px" }}

@@ -25,12 +25,17 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 const Invoices = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [dataContacts, setDataContacts] = useState([]);
   const [selectedRow, setSelectedRow] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const backendUrl = "https://dbapirest.onrender.com/api/v1/j03";
-  const [dataContacts, setDataContacts] = useState([]);
   const [visibleData, setVisibleData] = useState([]);
+
+  
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const fetchData = () => {
     fetch(backendUrl)
@@ -39,9 +44,6 @@ const Invoices = () => {
       .catch((error) => console.error("Error fetching data:", error));
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const handleExpandClick = () => {
     setExpanded((prevExpanded) => !prevExpanded);
@@ -52,20 +54,40 @@ const Invoices = () => {
   };
 
   const handleSaveClick = () => {
-    // Crea una copia de los datos actuales
-    const updatedDataContacts = [...dataContacts];
-    // Encuentra el índice de la fila que se está editando
-    const rowIndex = updatedDataContacts.findIndex(
-      (row) => row.j03 === selectedRow.j03
-    );
-    // Actualiza los datos de la fila editada en la copia de los datos
-    updatedDataContacts[rowIndex] = selectedRow;
-    // Actualiza el estado con los datos actualizados
-    setDataContacts(updatedDataContacts);
-    // Finaliza la edición
-    setIsEditing(false);
-    console.log("Datos actualizados:", selectedRow);
+    const updatedData = {
+      j03: selectedRow.j03,
+      nomin: selectedRow.nomin,
+      plva: selectedRow.plva,
+      cfisc: selectedRow.cfisc,
+      nomcitta: selectedRow.nomcitta,
+      nomcap: selectedRow.nomcap,
+      nomindirizzo: selectedRow.nomindirizzo,
+      nomprov: selectedRow.nomprov,
+      nomnote: selectedRow.nomnote,
+      codident: selectedRow.codident,
+      pec: selectedRow.pec
+    };
+
+    fetch(`${backendUrl}/${selectedRow.j03}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Error al actualizar los datos");
+        }
+        const updatedList = dataContacts.map((item) =>
+          item.j03 === selectedRow.j03 ? updatedData : item
+        );
+        setDataContacts(updatedList);
+        setIsEditing(false);
+      })
+      .catch((error) => console.error("Error al actualizar los datos:", error));
   };
+
 
   const handleRowClick = (params) => {
     const selectedClick = params.row.j03;
@@ -156,9 +178,22 @@ const Invoices = () => {
           </Box>
           <Collapse in={expanded} timeout="auto" unmountOnExit>
             <Grid container spacing={2}>
-              <Grid item xs={3} sx={{display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "15px"}}>
+              <Grid
+                item
+                xs={3}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  gap: "15px",
+                }}
+              >
                 <Typography
-                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around"}}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}
                 >
                   J03:{" "}
                   <Box
@@ -172,14 +207,18 @@ const Invoices = () => {
                       minHeight: "30px",
                       display: "inline-block",
                       backgroundColor: "#FFFFF",
-                      marginLeft: "100px"
+                      marginLeft: "100px",
                     }}
                   >
                     {selectedRow.j03 || ""}
                   </Box>
                 </Typography>
                 <Typography
-                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}
                 >
                   Nomin:{" "}
                   {isEditing ? (
@@ -213,7 +252,11 @@ const Invoices = () => {
                   )}
                 </Typography>
                 <Typography
-                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}
                 >
                   Plva:{" "}
                   {isEditing ? (
@@ -248,7 +291,11 @@ const Invoices = () => {
                   )}
                 </Typography>
                 <Typography
-                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}
                 >
                   Cfisc:{" "}
                   {isEditing ? (
@@ -283,7 +330,11 @@ const Invoices = () => {
                   )}
                 </Typography>
                 <Typography
-                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}
                 >
                   Nomcitta:{" "}
                   {isEditing ? (
@@ -319,9 +370,22 @@ const Invoices = () => {
                   )}
                 </Typography>
               </Grid>
-              <Grid item xs={3} sx={{display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "15px"}}>
+              <Grid
+                item
+                xs={3}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  gap: "15px",
+                }}
+              >
                 <Typography
-                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}
                 >
                   Nomcap:{" "}
                   {isEditing ? (
@@ -355,7 +419,11 @@ const Invoices = () => {
                   )}
                 </Typography>
                 <Typography
-                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}
                 >
                   Nomindirizzo:{" "}
                   {isEditing ? (
@@ -389,7 +457,11 @@ const Invoices = () => {
                   )}
                 </Typography>
                 <Typography
-                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}
                 >
                   Nomprov:{" "}
                   {isEditing ? (
@@ -423,7 +495,11 @@ const Invoices = () => {
                   )}
                 </Typography>
                 <Typography
-                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}
                 >
                   Nomnote:{" "}
                   {isEditing ? (
@@ -457,7 +533,11 @@ const Invoices = () => {
                   )}
                 </Typography>
                 <Typography
-                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}
                 >
                   Codident:{" "}
                   {isEditing ? (
@@ -491,7 +571,11 @@ const Invoices = () => {
                   )}
                 </Typography>
                 <Typography
-                  sx={{ display: "flex", alignItems: "center", justifyContent: "space-around" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                  }}
                 >
                   Pec:{" "}
                   {isEditing ? (

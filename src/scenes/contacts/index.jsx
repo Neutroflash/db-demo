@@ -87,33 +87,37 @@ const Contacts = () => {
     const selectedNomin = event.target.value;
     setSelectedJ03({ nomin: selectedNomin });
 
-    // Encuentra el id j03 correspondiente
-    const selectedJ03Id =
-      dataJ03.find((row) => row.nomin === selectedNomin)?.j03 || "";
+    if (isEditing) {
+      // Actualiza los datos de j03 en modo edición
+      const selectedJ03Data =
+        dataJ03.find((row) => row.nomin === selectedNomin) || {};
+      setSelectedJ03(selectedJ03Data);
+    } else {
+      // Actualiza los datos de j03 en modo visualización
+      const selectedJ03Data =
+        dataJ03.find((row) => row.nomin === selectedNomin) || {};
+      setSelectedJ03(selectedJ03Data);
 
-    // Realiza una solicitud al backend para obtener los datos de j02 relacionados con el id j03
-    fetch(`https://dbapirest.onrender.com/api/v1/j02?j03=${selectedJ03Id}`)
-      .then((response) => response.json())
-      .then((data) => {
-        // Actualiza los datos de j02
-        setDataContacts(data);
+      // Encuentra el id j03 correspondiente
+      const selectedJ03Id = selectedJ03Data.j03 || "";
 
-        // Actualiza el selector j02
-        setSelectedId(selectedJ03Id);
+      // Realiza una solicitud al backend para obtener los datos de j02 relacionados con el id j03
+      fetch(`https://dbapirest.onrender.com/api/v1/j02?j03=${selectedJ03Id}`)
+        .then((response) => response.json())
+        .then((data) => {
+          // Actualiza los datos de j02 en modo visualización
+          setDataContacts(data);
 
-        // Encuentra la fila seleccionada en los nuevos datos de j02
-        const selectedRow = data.find((row) => row.j02 === selectedJ03Id) || {};
-        setSelectedRow(selectedRow);
+          // Encuentra la fila seleccionada en los nuevos datos de j02 en modo visualización
+          const selectedRow =
+            data.find((row) => row.j02 === selectedJ03Id) || {};
+          setSelectedRow(selectedRow);
 
-        // Actualiza otros datos relacionados con j02
-        setSelectedJ04(selectedRow.j04 || "");
-
-        // Actualiza los datos de j03
-        const selectedJ03Data =
-          dataJ03.find((row) => row.nomin === selectedNomin) || {};
-        setSelectedJ03(selectedJ03Data);
-      })
-      .catch((error) => console.error("Error fetching J02 data:", error));
+          // Actualiza otros datos relacionados con j02 en modo visualización
+          setSelectedJ04(selectedRow.j04 || "");
+        })
+        .catch((error) => console.error("Error fetching J02 data:", error));
+    }
   };
 
   const handleIdChange = (event) => {
@@ -133,15 +137,17 @@ const Contacts = () => {
     const selectedJ04 = event.target.value;
     setSelectedJ04(selectedJ04);
 
-    const selectedRow =
-      dataContacts.find((row) => row.j04 === selectedJ04) || {};
-    setSelectedRow(selectedRow);
+    if (!isEditing) {
+      const selectedRow =
+        dataContacts.find((row) => row.j04 === selectedJ04) || {};
+      setSelectedRow(selectedRow);
 
-    const selectedJ02 = selectedRow.j02 || "";
-    setSelectedId(selectedJ02);
+      const selectedJ02 = selectedRow.j02 || "";
+      setSelectedId(selectedJ02);
 
-    const selectedJ03 = selectedRow.j03 || "";
-    fetchJ03Data(selectedJ02, selectedJ03);
+      const selectedJ03 = selectedRow.j03 || "";
+      fetchJ03Data(selectedJ02, selectedJ03);
+    }
   };
 
   const handleFieldChange = (field, value) => {
@@ -338,39 +344,72 @@ const Contacts = () => {
                     sx={{ display: "flex", alignItems: "center", gap: "5px" }}
                   >
                     J01:{" "}
-                    <Box
-                      component="span"
-                      sx={{
-                        border: 1,
-                        padding: 1,
-                        borderRadius: "5px",
-                        borderColor: "#FFBAAB",
-                        minWidth: "40px",
-                        minHeight: "40px",
-                        display: "inline-block",
-                        backgroundColor: "#FFD3D3",
-                      }}
-                    >
-                      {selectedRow.j01 || ""}
-                    </Box>
+                    {isEditing ? (
+                      <TextField
+                        variant="outlined"
+                        size="small"
+                        value={selectedRow.j01 || ""}
+                        onChange={(e) => {
+                          const value =
+                            e.target.value === "" ? null : e.target.value;
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            j01: value,
+                          }));
+                        }}
+                        sx={{ marginLeft: "4px", width: "60px" }}
+                      />
+                    ) : (
+                      <Box
+                        component="span"
+                        sx={{
+                          border: 1,
+                          padding: 1,
+                          borderRadius: "5px",
+                          borderColor: "#FFBAAB",
+                          minWidth: "40px",
+                          minHeight: "40px",
+                          display: "inline-block",
+                          backgroundColor: "#FFD3D3",
+                        }}
+                      >
+                        {selectedRow.j01 || ""}
+                      </Box>
+                    )}
                   </Typography>
                   <Typography>
                     J04:
-                    <Select
-                      variant="outlined"
-                      value={selectedJ04}
-                      onChange={handleJ04Change}
-                      disabled={isEditing}
-                      fullWidth
-                      style={{ marginLeft: "10px" }}
-                      sx={{ width: "74px", backgroundColor: "#D3FFEE" }}
-                    >
-                      {dataContacts.map((row) => (
-                        <MenuItem key={row.j04} value={row.j04}>
-                          {row.j04}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    {isEditing ? (
+                      <Select
+                        variant="outlined"
+                        value={selectedJ04}
+                        onChange={handleJ04Change}
+                        fullWidth
+                        style={{ marginLeft: "10px" }}
+                        sx={{ width: "74px", backgroundColor: "#D3FFEE" }}
+                      >
+                        {dataContacts.map((row) => (
+                          <MenuItem key={row.j04} value={row.j04}>
+                            {row.j04}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    ) : (
+                      <Select
+                        variant="outlined"
+                        value={selectedJ04}
+                        onChange={handleJ04Change}
+                        fullWidth
+                        style={{ marginLeft: "10px" }}
+                        sx={{ width: "74px", backgroundColor: "#D3FFEE" }}
+                      >
+                        {dataContacts.map((row) => (
+                          <MenuItem key={row.j04} value={row.j04}>
+                            {row.j04}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
                   </Typography>
                 </Box>
                 <Box
@@ -391,11 +430,12 @@ const Contacts = () => {
                         }}
                         variant="outlined"
                         size="small"
-                        value={selectedRow.j2num}
+                        value={selectedRow.j2num || ""}
                         onChange={(e) =>
                           setSelectedRow((prev) => ({
                             ...prev,
-                            j2num: e.target.value,
+                            j2num:
+                              e.target.value === "" ? null : e.target.value,
                           }))
                         }
                       />
@@ -764,20 +804,41 @@ const Contacts = () => {
                 <Box>
                   <Typography sx={{ display: "flex", alignItems: "center" }}>
                     J03:{" "}
-                    <Select
-                      disabled={isEditing}
-                      variant="outlined"
-                      value={selectedJ03.nomin || ""}
-                      onChange={handleJ03Change}
-                      fullWidth
-                      style={{ marginLeft: "10px", backgroundColor: "#FBFF80" }}
-                    >
-                      {dataJ03.map((row) => (
-                        <MenuItem key={row.nomin} value={row.nomin}>
-                          {row.nomin}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    {isEditing ? (
+                      <Select
+                        variant="outlined"
+                        value={selectedJ03.nomin || ""}
+                        onChange={handleJ03Change}
+                        fullWidth
+                        style={{
+                          marginLeft: "10px",
+                          backgroundColor: "#FBFF80",
+                        }}
+                      >
+                        {dataJ03.map((row) => (
+                          <MenuItem key={row.nomin} value={row.nomin}>
+                            {row.nomin}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    ) : (
+                      <Select
+                        variant="outlined"
+                        value={selectedJ03.nomin || ""}
+                        onChange={handleJ03Change}
+                        fullWidth
+                        style={{
+                          marginLeft: "10px",
+                          backgroundColor: "#FBFF80",
+                        }}
+                      >
+                        {dataJ03.map((row) => (
+                          <MenuItem key={row.nomin} value={row.nomin}>
+                            {row.nomin}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
                   </Typography>
                 </Box>
                 <Box
@@ -1031,9 +1092,11 @@ const Contacts = () => {
                               fontSize: "11px",
                             }}
                           >
-                            {selectedRow.j2_incas_1 !== null
+                            {selectedRow.j2_incas_1 !== null &&
+                            selectedRow.j2_incas_1 !== undefined &&
+                            selectedRow.j2_incas_1.trim() !== ""
                               ? `€ ${selectedRow.j2_incas_1}`
-                              : ""}
+                              : "0"}
                           </Box>
                         )}
                       </Typography>
@@ -1075,9 +1138,11 @@ const Contacts = () => {
                               fontSize: "11px",
                             }}
                           >
-                            {selectedRow.j2_incas_2 !== null
+                            {selectedRow.j2_incas_2 !== null &&
+                            selectedRow.j2_incas_2 !== undefined &&
+                            selectedRow.j2_incas_1.trim() !== ""
                               ? `€ ${selectedRow.j2_incas_2}`
-                              : ""}
+                              : "0"}
                           </Box>
                         )}
                       </Typography>
@@ -1118,9 +1183,11 @@ const Contacts = () => {
                               fontSize: "11px",
                             }}
                           >
-                            {selectedRow.j2_incas_3 !== null
+                            {selectedRow.j2_incas_3 !== null &&
+                            selectedRow.j2_incas_3 !== undefined &&
+                            selectedRow.j2_incas_1.trim() !== ""
                               ? `€ ${selectedRow.j2_incas_3}`
-                              : ""}
+                              : "0"}
                           </Box>
                         )}
                       </Typography>
@@ -1148,8 +1215,8 @@ const Contacts = () => {
                           }}
                         >
                           {selectedRow.j2_incassato !== null
-                              ? `€ ${selectedRow.j2_incassato}`
-                              : ""}
+                            ? `€ ${selectedRow.j2_incassato}`
+                            : ""}
                         </Box>
                       </Typography>
                       <Typography
@@ -1176,8 +1243,8 @@ const Contacts = () => {
                           }}
                         >
                           {selectedRow.j2_da_incassare !== null
-                              ? `€ ${selectedRow.j2_da_incassare}`
-                              : ""}
+                            ? `€ ${selectedRow.j2_da_incassare}`
+                            : ""}
                         </Box>
                       </Typography>
                     </Grid>

@@ -26,6 +26,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.6.8",
     "chart.js": "^3.9.1",
+    "console-browserify": "^1.2.0",
     "formik": "^2.2.9",
     "react": "^18.2.0",
     "react-chartjs-2": "^4.3.1",

@@ -39,7 +39,7 @@ const Team = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const [j03Values, setJ03Values] = useState([]);
-  const backendUrl = "http://localhost:3000/api/v1/postgres";
+  const backendUrl = "https://dbapirest.onrender.com/api/v1/postgres";
   const fecha = selectedRow.j1dat ? new Date(selectedRow.j1dat) : null;
   const fechaFormateada = fecha ? fecha.toISOString().split("T")[0] : "";
   const handleExpandClick = () => {
@@ -51,7 +51,7 @@ const Team = () => {
   }, []);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/v1/j04`)
+    fetch(`https://dbapirest.onrender.com/api/v1/j04`)
       .then((response) => response.json())
       .then((data) => {
         setJ04Options(data);

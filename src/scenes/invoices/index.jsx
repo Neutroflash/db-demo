@@ -28,7 +28,7 @@ const Invoices = () => {
   const [selectedRow, setSelectedRow] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const backendUrl = "http://localhost:3000/api/v1/j03";
+  const backendUrl = "https://dbapirest.onrender.com/api/v1/j03";
   const [dataContacts, setDataContacts] = useState([]);
   const [visibleData, setVisibleData] = useState([]);
 

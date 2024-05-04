@@ -63,7 +63,7 @@ const Contacts = () => {
   };
 
   const fetchData = () => {
-    fetch("http://localhost:3000/api/v1/j02")
+    fetch("https://dbapirest.onrender.com/api/v1/j02")
       .then((response) => response.json())
       .then((data) => setDataContacts(data))
       .catch((error) => console.error("Error fetching data:", error));
@@ -71,7 +71,7 @@ const Contacts = () => {
 
   const fetchJ03Data = (selectedId, selectedJ03) => {
     fetch(
-      `http://localhost:3000/api/v1/j03?j02=${selectedId}&j03=${selectedJ03}`
+      `https://dbapirest.onrender.com/api/v1/j03?j02=${selectedId}&j03=${selectedJ03}`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -92,7 +92,7 @@ const Contacts = () => {
       dataJ03.find((row) => row.nomin === selectedNomin)?.j03 || "";
 
     // Realiza una solicitud al backend para obtener los datos de j02 relacionados con el id j03
-    fetch(`http://localhost:3000/api/v1/j02?j03=${selectedJ03Id}`)
+    fetch(`https://dbapirest.onrender.com/api/v1/j02?j03=${selectedJ03Id}`)
       .then((response) => response.json())
       .then((data) => {
         // Actualiza los datos de j02
@@ -186,7 +186,7 @@ const Contacts = () => {
     };
 
     // Realizar la petición PUT para actualizar los datos en la API
-    fetch(`http://localhost:3000/api/v1/j02/${selectedRow.j02}`, {
+    fetch(`https://dbapirest.onrender.com/api/v1/j02/${selectedRow.j02}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

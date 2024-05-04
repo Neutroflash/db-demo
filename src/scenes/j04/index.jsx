@@ -31,7 +31,7 @@ const J04 = () => {
   const fechaFormateada = fecha ? fecha.toISOString().split("T")[0] : "";
   const [isEditing, setIsEditing] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const backendUrl = "http://localhost:3000/api/v1/j04";
+  const backendUrl = "https://dbapirest.onrender.com/api/v1/j04";
   const [visibleData, setVisibleData] = useState([]);
   const [loading, setLoading] = useState(false);
   const handleExpandClick = () => {

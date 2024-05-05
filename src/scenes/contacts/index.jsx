@@ -46,10 +46,10 @@ const Contacts = () => {
     ? new Date(selectedRow.j2_dat_inc_2)
     : null;
   const fechaformat2 = fecha2 ? fecha2.toISOString().split("T")[0] : "";
-  const fechaformat3 = fecha3 ? fecha3.toISOString().split("T")[0] : "";
   const fechaformat4 = fecha4 ? fecha4.toISOString().split("T")[0] : "";
   const fechaformat5 = fecha5 ? fecha5.toISOString().split("T")[0] : "";
   const fechaFormateada = fecha ? fecha.toISOString().split("T")[0] : "";
+  const datacontr = fecha3 ? fecha3.toISOString().split("T")[0] : "";
   const handleExpandClick = () => {
     setExpanded((prevExpanded) => !prevExpanded);
   };
@@ -114,6 +114,7 @@ const Contacts = () => {
           setSelectedRow(selectedRow);
 
           // Actualiza otros datos relacionados con j02 en modo visualización
+          setSelectedId(selectedRow.j02 || "");
           setSelectedJ04(selectedRow.j04 || "");
         })
         .catch((error) => console.error("Error fetching J02 data:", error));
@@ -388,11 +389,14 @@ const Contacts = () => {
                         style={{ marginLeft: "10px" }}
                         sx={{ width: "74px", backgroundColor: "#D3FFEE" }}
                       >
-                        {dataContacts.map((row) => (
-                          <MenuItem key={row.j04} value={row.j04}>
-                            {row.j04}
-                          </MenuItem>
-                        ))}
+                        {dataContacts
+                          .slice()
+                          .sort((a, b) => a.j04 - b.j04)
+                          .map((row) => (
+                            <MenuItem key={row.j04} value={row.j04}>
+                              {row.j04}
+                            </MenuItem>
+                          ))}
                       </Select>
                     ) : (
                       <Select
@@ -403,11 +407,14 @@ const Contacts = () => {
                         style={{ marginLeft: "10px" }}
                         sx={{ width: "74px", backgroundColor: "#D3FFEE" }}
                       >
-                        {dataContacts.map((row) => (
-                          <MenuItem key={row.j04} value={row.j04}>
-                            {row.j04}
-                          </MenuItem>
-                        ))}
+                        {dataContacts
+                          .slice()
+                          .sort((a, b) => a.j04 - b.j04)
+                          .map((row) => (
+                            <MenuItem key={row.j04} value={row.j04}>
+                              {row.j04}
+                            </MenuItem>
+                          ))}
                       </Select>
                     )}
                   </Typography>
@@ -466,11 +473,11 @@ const Contacts = () => {
                         type="date"
                         variant="outlined"
                         size="small"
-                        value={fechaFormateada}
+                        value={fechaFormateada || ""}
                         onChange={(e) =>
                           setSelectedRow((prev) => ({
                             ...prev,
-                            j1dat: e.target.value,
+                            j2dat: e.target.value,
                           }))
                         }
                         sx={{ marginLeft: "4px" }}
@@ -815,11 +822,14 @@ const Contacts = () => {
                           backgroundColor: "#FBFF80",
                         }}
                       >
-                        {dataJ03.map((row) => (
-                          <MenuItem key={row.nomin} value={row.nomin}>
-                            {row.nomin}
-                          </MenuItem>
-                        ))}
+                        {dataJ03
+                          .slice()
+                          .sort((a, b) => a.nomin.localeCompare(b.nomin))
+                          .map((row) => (
+                            <MenuItem key={row.nomin} value={row.nomin}>
+                              {row.nomin}
+                            </MenuItem>
+                          ))}
                       </Select>
                     ) : (
                       <Select
@@ -832,15 +842,19 @@ const Contacts = () => {
                           backgroundColor: "#FBFF80",
                         }}
                       >
-                        {dataJ03.map((row) => (
-                          <MenuItem key={row.nomin} value={row.nomin}>
-                            {row.nomin}
-                          </MenuItem>
-                        ))}
+                        {dataJ03
+                          .slice()
+                          .sort((a, b) => a.nomin.localeCompare(b.nomin))
+                          .map((row) => (
+                            <MenuItem key={row.nomin} value={row.nomin}>
+                              {row.nomin}
+                            </MenuItem>
+                          ))}
                       </Select>
                     )}
                   </Typography>
                 </Box>
+
                 <Box
                   sx={{
                     display: "grid",
@@ -972,7 +986,7 @@ const Contacts = () => {
                         marginLeft: "8px",
                       }}
                     >
-                      {selectedRow.nomprov || ""}
+                      {selectedJ03.nomprov || ""}
                     </Box>
                   </Typography>
                   <Typography
@@ -1270,7 +1284,7 @@ const Contacts = () => {
                             type="date"
                             variant="outlined"
                             size="small"
-                            value={selectedRow.fechaformat3 || ""}
+                            value={datacontr || ""}
                             onChange={(e) =>
                               setSelectedRow((prev) => ({
                                 ...prev,
@@ -1295,9 +1309,7 @@ const Contacts = () => {
                               fontSize: "11px",
                             }}
                           >
-                            {selectedRow.fechaformat3
-                              ? selectedRow.fechaformat3
-                              : ""}
+                            {datacontr ? datacontr : ""}
                           </Box>
                         )}
                       </Typography>
@@ -1403,7 +1415,7 @@ const Contacts = () => {
                             onChange={(e) =>
                               setSelectedRow((prev) => ({
                                 ...prev,
-                                j2_dat_saldo: e.target.value,
+                                j2_data_saldo: e.target.value,
                               }))
                             }
                             sx={{ width: "120px" }}

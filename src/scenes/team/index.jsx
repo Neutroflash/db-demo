@@ -98,7 +98,7 @@ const Team = () => {
       }));
     } else {
       const relatedJ01Row = dataContacts.find((row) => row.j04 === value);
-  
+
       if (relatedJ01Row) {
         setSelectedRow((prev) => ({
           ...prev,
@@ -107,7 +107,6 @@ const Team = () => {
       }
     }
   };
-  
 
   const getRowDataByJ03 = (j03Value) => {
     const selectedRow = dataContacts.find((row) => row.j03 === j03Value);
@@ -601,11 +600,13 @@ const Team = () => {
                           backgroundColor: "#FBFF80",
                         }}
                       >
-                        {j03Values.map((value) => (
-                          <MenuItem key={value} value={value}>
-                            {value}
-                          </MenuItem>
-                        ))}
+                        {j03Values
+                          .sort((a, b) => a.localeCompare(b))
+                          .map((value) => (
+                            <MenuItem key={value} value={value}>
+                              {value}
+                            </MenuItem>
+                          ))}
                       </Select>
                     ) : (
                       <Select
@@ -620,15 +621,18 @@ const Team = () => {
                           backgroundColor: "#FBFF80",
                         }}
                       >
-                        {j03Values.map((value) => (
-                          <MenuItem key={value} value={value}>
-                            {value}
-                          </MenuItem>
-                        ))}
+                        {j03Values
+                          .sort((a, b) => a.localeCompare(b))
+                          .map((value) => (
+                            <MenuItem key={value} value={value}>
+                              {value}
+                            </MenuItem>
+                          ))}
                       </Select>
                     )}
                   </Typography>
                 </Box>
+
                 {/* Cartella */}
                 <Box>
                   <Typography
@@ -652,35 +656,44 @@ const Team = () => {
                     >
                       {isEditing ? (
                         <Select
-                        value={selectedRow.j04 || ""}
-                        onChange={(e) => handleJ04Change(e.target.value, "edit")}
-                        sx={{
-                          fontSize: "12px",
-                          backgroundColor: "#C9FFB5",
-                        }}
-                      >
-                        {dataContacts.map((row) => (
-                          <MenuItem key={row.j04} value={row.j04}>
-                            {row.j04}
-                          </MenuItem>
-                        ))}
-                      </Select>
-
-                      ):(
-                      <Select
-                        value={selectedRow.j04 || ""}
-                        onChange={(e) => handleJ04Change(e.target.value, "view")}
-                        sx={{
-                          fontSize: "12px",
-                          backgroundColor: "#C9FFB5",
-                        }}
-                      >
-                        {dataContacts.map((row) => (
-                          <MenuItem key={row.j04} value={row.j04}>
-                            {row.j04}
-                          </MenuItem>
-                        ))}
-                      </Select>
+                          value={selectedRow.j04 || ""}
+                          onChange={(e) =>
+                            handleJ04Change(e.target.value, "edit")
+                          }
+                          sx={{
+                            fontSize: "12px",
+                            backgroundColor: "#C9FFB5",
+                          }}
+                        >
+                          {dataContacts
+                            .slice()
+                            .sort((a, b) => a.j04 - b.j04)
+                            .map((row) => (
+                              <MenuItem key={row.j04} value={row.j04}>
+                                {row.j04}
+                              </MenuItem>
+                            ))}
+                        </Select>
+                      ) : (
+                        <Select
+                          value={selectedRow.j04 || ""}
+                          onChange={(e) =>
+                            handleJ04Change(e.target.value, "view")
+                          }
+                          sx={{
+                            fontSize: "12px",
+                            backgroundColor: "#C9FFB5",
+                          }}
+                        >
+                          {dataContacts
+                            .slice()
+                            .sort((a, b) => a.j04 - b.j04)
+                            .map((row) => (
+                              <MenuItem key={row.j04} value={row.j04}>
+                                {row.j04}
+                              </MenuItem>
+                            ))}
+                        </Select>
                       )}
                     </Box>
                     <Typography>

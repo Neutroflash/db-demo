@@ -112,18 +112,19 @@ const J04 = () => {
 
   const handleNominativoChange = (e) => {
     const selectedJ03 = e.target.value;
-  
+
     if (isEditing) {
       setSelectedRow((prev) => ({
         ...prev,
         j03: selectedJ03,
       }));
     } else {
-      const selectedRowData = dataContacts.find((row) => row.j03 === selectedJ03);
+      const selectedRowData = dataContacts.find(
+        (row) => row.j03 === selectedJ03
+      );
       setSelectedRow(selectedRowData || {});
     }
   };
-
 
   const handleSaveClick = () => {
     // Construir el objeto con los datos actualizados
@@ -295,11 +296,13 @@ const J04 = () => {
                   {isEditing ? (
                     <Select
                       sx={{ width: "390px", height: "30px" }}
-                      value={isEditing ? selectedRow.j03 || "" : selectedRow.j03 || ""}
+                      value={selectedRow.j03 || ""}
                       onChange={handleNominativoChange}
                     >
                       {visibleData
+                        .slice()
                         .filter((row) => row.j03 !== null)
+                        .sort((a, b) => a.j03.localeCompare(b.j03))
                         .map((row) => (
                           <MenuItem key={row.j03} value={row.j03}>
                             {row.j03}
@@ -313,7 +316,9 @@ const J04 = () => {
                       onChange={handleNominativoChange}
                     >
                       {visibleData
+                        .slice()
                         .filter((row) => row.j03 !== null)
+                        .sort((a, b) => a.j03.localeCompare(b.j03))
                         .map((row) => (
                           <MenuItem key={row.j03} value={row.j03}>
                             {row.j03}
@@ -322,6 +327,7 @@ const J04 = () => {
                     </Select>
                   )}
                 </Typography>
+
                 <Typography
                   sx={{ display: "flex", alignItems: "center", gap: "5px" }}
                 >

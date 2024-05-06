@@ -119,14 +119,27 @@ const Team = () => {
     } else {
       const relatedJ01Row = dataContacts.find((row) => row.j04 === value);
 
-      if (relatedJ01Row) {
-        setSelectedRow((prev) => ({
-          ...prev,
-          ...relatedJ01Row,
-        }));
-      }
+      setSelectedRow((prev) => ({
+        ...prev,
+        ...(relatedJ01Row || {
+          j01: "",
+          j1titol: "",
+          j1note: "",
+          j1dat: "",
+          j03: "",
+          link_ordine: "",
+          j1_avanz: "",
+          j1rif_offer: "",
+          j1rif_client: "",
+          j1impiva: "",
+          sel: "",
+        }),
+        j04: value,
+      }));
     }
-  };
+};
+
+  
 
   const getRowDataByJ03 = (j03Value) => {
     const selectedRow = dataContacts.find((row) => row.j03 === j03Value);

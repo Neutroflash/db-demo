@@ -39,6 +39,7 @@ const Team = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const [j03Values, setJ03Values] = useState([]);
+  const [dataJ03, setDataJ03] = useState([]);
   const backendUrl = "https://dbapirest.onrender.com/api/v1/postgres";
   const fecha = selectedRow.j1dat ? new Date(selectedRow.j1dat) : null;
   const fechaFormateada = fecha ? fecha.toISOString().split("T")[0] : "";
@@ -48,6 +49,10 @@ const Team = () => {
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    fetchJ03Data();
   }, []);
 
   useEffect(() => {
@@ -69,6 +74,21 @@ const Team = () => {
       })
       .catch((error) => console.error("Error fetching data:", error));
   };
+
+  const fetchJ03Data = () => {
+    fetch(`https://dbapirest.onrender.com/api/v1/j03`)
+      .then((response) => response.json())
+      .then((data) => {
+        setDataJ03(data);
+        const nominValues = data.map((row) => row.nomin);
+        setJ03Values(nominValues);
+      })
+      .catch((error) => console.error("Error fetching J03 data:", error));
+  };
+  
+  useEffect(() => {
+    fetchJ03Data();
+  }, []);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -590,9 +610,7 @@ const Team = () => {
                     {isEditing ? (
                       <Select
                         value={selectedRow.j03 || ""}
-                        onChange={(e) =>
-                          handleClientiChange(e.target.value, "edit")
-                        }
+                        onChange={(e) => handleClientiChange(e.target.value)}
                         sx={{
                           width: "300px",
                           minHeight: "40px",
@@ -611,9 +629,7 @@ const Team = () => {
                     ) : (
                       <Select
                         value={selectedRow.j03 || ""}
-                        onChange={(e) =>
-                          handleClientiChange(e.target.value, "view")
-                        }
+                        onChange={(e) => handleClientiChange(e.target.value)}
                         sx={{
                           width: "300px",
                           minHeight: "40px",

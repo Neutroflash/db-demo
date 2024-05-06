@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import {
   Box,
   Button,
@@ -85,7 +85,7 @@ const Team = () => {
       })
       .catch((error) => console.error("Error fetching J03 data:", error));
   };
-  
+
   useEffect(() => {
     fetchJ03Data();
   }, []);
@@ -671,45 +671,45 @@ const Team = () => {
                       }}
                     >
                       {isEditing ? (
-                        <Select
-                          value={selectedRow.j04 || ""}
-                          onChange={(e) =>
-                            handleJ04Change(e.target.value, "edit")
-                          }
-                          sx={{
-                            fontSize: "12px",
-                            backgroundColor: "#C9FFB5",
-                          }}
-                        >
-                          {dataContacts
-                            .slice()
-                            .sort((a, b) => a.j04 - b.j04)
-                            .map((row) => (
-                              <MenuItem key={row.j04} value={row.j04}>
-                                {row.j04}
+                        <Suspense fallback={<div>Loading...</div>}>
+                          <Select
+                            value={selectedRow.j04 || ""}
+                            onChange={(e) =>
+                              handleJ04Change(e.target.value, "edit")
+                            }
+                            sx={{
+                              fontSize: "12px",
+                              backgroundColor: "#C9FFB5",
+                            }}
+                            MenuProps={{ style: { maxHeight: "45x0px" } }}
+                          >
+                            {j04Options.map((option) => (
+                              <MenuItem key={option.j04} value={option.j04}>
+                                {option.j04}
                               </MenuItem>
                             ))}
-                        </Select>
+                          </Select>
+                        </Suspense>
                       ) : (
-                        <Select
-                          value={selectedRow.j04 || ""}
-                          onChange={(e) =>
-                            handleJ04Change(e.target.value, "view")
-                          }
-                          sx={{
-                            fontSize: "12px",
-                            backgroundColor: "#C9FFB5",
-                          }}
-                        >
-                          {dataContacts
-                            .slice()
-                            .sort((a, b) => a.j04 - b.j04)
-                            .map((row) => (
-                              <MenuItem key={row.j04} value={row.j04}>
-                                {row.j04}
+                        <Suspense fallback={<div>Loading...</div>}>
+                          <Select
+                            value={selectedRow.j04 || ""}
+                            onChange={(e) =>
+                              handleJ04Change(e.target.value, "view")
+                            }
+                            sx={{
+                              fontSize: "12px",
+                              backgroundColor: "#C9FFB5",
+                            }}
+                            MenuProps={{ style: { maxHeight: "450px" } }}
+                          >
+                            {j04Options.map((option) => (
+                              <MenuItem key={option.j04} value={option.j04}>
+                                {option.j04}
                               </MenuItem>
                             ))}
-                        </Select>
+                          </Select>
+                        </Suspense>
                       )}
                     </Box>
                     <Typography>

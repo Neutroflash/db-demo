@@ -88,49 +88,50 @@ const Contacts = () => {
     const selectedNomin = event.target.value;
 
     // Encuentra el ID correspondiente al nomin seleccionado en J03_NOMIN_CLIENTI
-    const selectedJ03Data = dataJ03.find((row) => row.nomin === selectedNomin) || {};
-    const selectedJ03Id = selectedJ03Data.j03 || '';
+    const selectedJ03Data =
+      dataJ03.find((row) => row.nomin === selectedNomin) || {};
+    const selectedJ03Id = selectedJ03Data.j03 || "";
 
     // Actualiza el estado local del selector
     setSelectedJ03(selectedJ03Data);
 
     if (isEditing) {
-        // Actualiza la columna j03 de la fila seleccionada en J02_FAT con el ID encontrado
-        fetch(`https://dbapirest.onrender.com/api/v1/j02/${selectedRow.j02}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ j03: selectedJ03Id }),
-        })
+      // Actualiza la columna j03 de la fila seleccionada en J02_FAT con el ID encontrado
+      fetch(`https://dbapirest.onrender.com/api/v1/j02/${selectedRow.j02}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ j03: selectedJ03Id }),
+      })
         .then((response) => {
-            if (!response.ok) {
-                throw new Error('Error al actualizar los datos');
-            }
-            // Actualiza el estado local de los datos de la fila seleccionada en J02_FAT
-            setSelectedRow((prevRow) => ({
-                ...prevRow,
-                j03: selectedJ03Id,
-            }));
+          if (!response.ok) {
+            throw new Error("Error al actualizar los datos");
+          }
+          // Actualiza el estado local de los datos de la fila seleccionada en J02_FAT
+          setSelectedRow((prevRow) => ({
+            ...prevRow,
+            j03: selectedJ03Id,
+          }));
         })
-        .catch((error) => console.error('Error al actualizar los datos:', error));
+        .catch((error) =>
+          console.error("Error al actualizar los datos:", error)
+        );
     } else {
-        // Actualiza los demás datos relevantes cuando no estás en modo edición
-        setDataContacts((data) => {
-            // Encuentra la fila seleccionada en los nuevos datos de j02 en modo visualización
-            const selectedRow =
-                data.find((row) => row.j02 === selectedJ03Id) || {};
-            setSelectedRow(selectedRow);
+      // Actualiza los demás datos relevantes cuando no estás en modo edición
+      setDataContacts((data) => {
+        // Encuentra la fila seleccionada en los nuevos datos de j02 en modo visualización
+        const selectedRow = data.find((row) => row.j02 === selectedJ03Id) || {};
+        setSelectedRow(selectedRow);
 
-            // Actualiza otros datos relacionados con j02 en modo visualización
-            setSelectedId(selectedRow.j02 || "");
-            setSelectedJ04(selectedRow.j04 || "");
+        // Actualiza otros datos relacionados con j02 en modo visualización
+        setSelectedId(selectedRow.j02 || "");
+        setSelectedJ04(selectedRow.j04 || "");
 
-            return data;
-        });
+        return data;
+      });
     }
-};
-
+  };
 
   const handleIdChange = (event) => {
     const selectedJ02 = event.target.value;
@@ -192,6 +193,7 @@ const Contacts = () => {
     // Construir el objeto con los datos actualizados, incluyendo los resultados de los cálculos
     const updatedData = {
       ...selectedRow, // Mantener los valores anteriores
+      j01: selectedRow.j01,
       j2imp: j2imp.toFixed(2),
       j2pcnpaia: j2pcnpaia.toFixed(2),
       j2cnpaia: j2cnpaia.toFixed(2),
@@ -1454,12 +1456,25 @@ const Contacts = () => {
 
                       <Typography>
                         pag-saldo:{" "}
-                        <Checkbox
-                          checked={selectedRow.pag_saldo}
-                          disabled
-                          color="primary"
-                          inputProps={{ "aria-label": "controlled" }}
-                        />
+                        {isEditing ? (
+                          <Checkbox
+                            checked={selectedRow.pag_saldo}
+                            color="primary"
+                            onChange={(e) =>
+                              setSelectedRow((prev) => ({
+                                ...prev,
+                                pag_saldo: e.target.checked,
+                              }))
+                            }
+                            inputProps={{ "aria-label": "controlled" }}
+                          />
+                        ) : (
+                          <Checkbox
+                            checked={selectedRow.pag_saldo}
+                            color="primary"
+                            inputProps={{ "aria-label": "controlled" }}
+                          />
+                        )}
                       </Typography>
                     </Grid>
                   </Grid>

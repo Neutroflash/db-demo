@@ -60,6 +60,7 @@ const Contacts = () => {
 
   const handleEditClick = () => {
     setIsEditing(true);
+    setSelectedJ03(selectedRow.j03);
   };
 
   const fetchData = () => {
@@ -85,41 +86,51 @@ const Contacts = () => {
 
   const handleJ03Change = (event) => {
     const selectedNomin = event.target.value;
-    setSelectedJ03({ nomin: selectedNomin });
+
+    // Encuentra el ID correspondiente al nomin seleccionado en J03_NOMIN_CLIENTI
+    const selectedJ03Data = dataJ03.find((row) => row.nomin === selectedNomin) || {};
+    const selectedJ03Id = selectedJ03Data.j03 || '';
+
+    // Actualiza el estado local del selector
+    setSelectedJ03(selectedJ03Data);
 
     if (isEditing) {
-      // Actualiza los datos de j03 en modo edición
-      const selectedJ03Data =
-        dataJ03.find((row) => row.nomin === selectedNomin) || {};
-      setSelectedJ03(selectedJ03Data);
-    } else {
-      // Actualiza los datos de j03 en modo visualización
-      const selectedJ03Data =
-        dataJ03.find((row) => row.nomin === selectedNomin) || {};
-      setSelectedJ03(selectedJ03Data);
-
-      // Encuentra el id j03 correspondiente
-      const selectedJ03Id = selectedJ03Data.j03 || "";
-
-      // Realiza una solicitud al backend para obtener los datos de j02 relacionados con el id j03
-      fetch(`https://dbapirest.onrender.com/api/v1/j02?j03=${selectedJ03Id}`)
-        .then((response) => response.json())
-        .then((data) => {
-          // Actualiza los datos de j02 en modo visualización
-          setDataContacts(data);
-
-          // Encuentra la fila seleccionada en los nuevos datos de j02 en modo visualización
-          const selectedRow =
-            data.find((row) => row.j02 === selectedJ03Id) || {};
-          setSelectedRow(selectedRow);
-
-          // Actualiza otros datos relacionados con j02 en modo visualización
-          setSelectedId(selectedRow.j02 || "");
-          setSelectedJ04(selectedRow.j04 || "");
+        // Actualiza la columna j03 de la fila seleccionada en J02_FAT con el ID encontrado
+        fetch(`https://dbapirest.onrender.com/api/v1/j02/${selectedRow.j02}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ j03: selectedJ03Id }),
         })
-        .catch((error) => console.error("Error fetching J02 data:", error));
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error('Error al actualizar los datos');
+            }
+            // Actualiza el estado local de los datos de la fila seleccionada en J02_FAT
+            setSelectedRow((prevRow) => ({
+                ...prevRow,
+                j03: selectedJ03Id,
+            }));
+        })
+        .catch((error) => console.error('Error al actualizar los datos:', error));
+    } else {
+        // Actualiza los demás datos relevantes cuando no estás en modo edición
+        setDataContacts((data) => {
+            // Encuentra la fila seleccionada en los nuevos datos de j02 en modo visualización
+            const selectedRow =
+                data.find((row) => row.j02 === selectedJ03Id) || {};
+            setSelectedRow(selectedRow);
+
+            // Actualiza otros datos relacionados con j02 en modo visualización
+            setSelectedId(selectedRow.j02 || "");
+            setSelectedJ04(selectedRow.j04 || "");
+
+            return data;
+        });
     }
-  };
+};
+
 
   const handleIdChange = (event) => {
     const selectedJ02 = event.target.value;

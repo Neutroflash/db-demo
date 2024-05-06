@@ -681,7 +681,7 @@ const Team = () => {
                               fontSize: "12px",
                               backgroundColor: "#C9FFB5",
                             }}
-                            MenuProps={{ style: { maxHeight: "45x0px" } }}
+                            MenuProps={{ style: { maxHeight: "450px" } }}
                           >
                             {j04Options.map((option) => (
                               <MenuItem key={option.j04} value={option.j04}>

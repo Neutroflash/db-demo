@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import {
   TextField,
   Box,
@@ -27,11 +27,13 @@ const Contacts = () => {
   const [selectedId, setSelectedId] = useState("");
   const [selectedJ04, setSelectedJ04] = useState("");
   const [selectedJ03, setSelectedJ03] = useState({});
+  const [j04Options, setJ04Options] = useState([]);
   const [selectedJ02Click, setSelectedJ02Click] = useState(null);
   const [dataJ03, setDataJ03] = useState([]);
   const [expanded, setExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [invoiceData, setInvoiceData] = useState(selectedRow);
+  const [originalData, setOriginalData] = useState(null);
   const fecha = selectedRow.j2dat ? new Date(selectedRow.j2dat) : null;
   const fecha2 = selectedRow.j2_data_saldo
     ? new Date(selectedRow.j2_data_saldo)
@@ -58,9 +60,18 @@ const Contacts = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    fetch(`https://dbapirest.onrender.com/api/v1/j04`)
+      .then((response) => response.json())
+      .then((data) => {
+        setJ04Options(data);
+      })
+      .catch((error) => console.error("Error fetching j04 options:", error));
+  }, []);
+
   const handleEditClick = () => {
     setIsEditing(true);
-    setSelectedJ03(selectedRow.j03);
+    setOriginalData(selectedRow);
   };
 
   const fetchData = () => {
@@ -133,6 +144,7 @@ const Contacts = () => {
     }
   };
 
+
   const handleIdChange = (event) => {
     const selectedJ02 = event.target.value;
     setSelectedId(selectedJ02);
@@ -149,19 +161,24 @@ const Contacts = () => {
   const handleJ04Change = (event) => {
     const selectedJ04 = event.target.value;
     setSelectedJ04(selectedJ04);
-
-    if (!isEditing) {
-      const selectedRow =
-        dataContacts.find((row) => row.j04 === selectedJ04) || {};
+  
+    if (isEditing) {
+      setSelectedRow((prevRow) => ({
+        ...prevRow,
+        j04: selectedJ04,
+      }));
+    } else {
+      const selectedRow = dataContacts.find((row) => row.j04 === selectedJ04) || {};
       setSelectedRow(selectedRow);
-
+  
       const selectedJ02 = selectedRow.j02 || "";
       setSelectedId(selectedJ02);
-
+  
       const selectedJ03 = selectedRow.j03 || "";
       fetchJ03Data(selectedJ02, selectedJ03);
     }
   };
+  
 
   const handleFieldChange = (field, value) => {
     setInvoiceData((prevData) => ({
@@ -194,6 +211,7 @@ const Contacts = () => {
     const updatedData = {
       ...selectedRow, // Mantener los valores anteriores
       j01: selectedRow.j01,
+      j04: selectedRow.j04,
       j2imp: j2imp.toFixed(2),
       j2pcnpaia: j2pcnpaia.toFixed(2),
       j2cnpaia: j2cnpaia.toFixed(2),
@@ -394,24 +412,25 @@ const Contacts = () => {
                   <Typography>
                     J04:
                     {isEditing ? (
+                      <Suspense fallback={<div>Loading...</div>}>
                       <Select
                         variant="outlined"
                         value={selectedJ04}
                         onChange={handleJ04Change}
                         fullWidth
                         style={{ marginLeft: "10px" }}
-                        sx={{ width: "74px", backgroundColor: "#D3FFEE" }}
+                        sx={{ width: "74px", backgroundColor: "#D3FFEE", maxHeight: "250px" }}
+                        MenuProps={{ style: { maxHeight: "450px" } }}
                       >
-                        {dataContacts
-                          .slice()
-                          .sort((a, b) => a.j04 - b.j04)
-                          .map((row) => (
-                            <MenuItem key={row.j04} value={row.j04}>
-                              {row.j04}
-                            </MenuItem>
-                          ))}
+                        {j04Options.map((option) => (
+                          <MenuItem key={option.j04} value={option.j04}>
+                            {option.j04}
+                          </MenuItem>
+                        ))}
                       </Select>
+                      </Suspense>
                     ) : (
+                      <Suspense fallback={<div>Loading...</div>}>
                       <Select
                         variant="outlined"
                         value={selectedJ04}
@@ -419,16 +438,15 @@ const Contacts = () => {
                         fullWidth
                         style={{ marginLeft: "10px" }}
                         sx={{ width: "74px", backgroundColor: "#D3FFEE" }}
+                        MenuProps={{ style: { maxHeight: "450px" } }}
                       >
-                        {dataContacts
-                          .slice()
-                          .sort((a, b) => a.j04 - b.j04)
-                          .map((row) => (
-                            <MenuItem key={row.j04} value={row.j04}>
-                              {row.j04}
-                            </MenuItem>
-                          ))}
+                        {j04Options.map((option) => (
+                          <MenuItem key={option.j04} value={option.j04}>
+                            {option.j04}
+                          </MenuItem>
+                        ))}
                       </Select>
+                      </Suspense>
                     )}
                   </Typography>
                 </Box>

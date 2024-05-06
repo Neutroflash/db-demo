@@ -34,6 +34,8 @@ const J04 = () => {
   const backendUrl = "https://dbapirest.onrender.com/api/v1/j04";
   const [visibleData, setVisibleData] = useState([]);
   const [selectedJ03, setSelectedJ03] = useState([]);
+  const [j03Values, setJ03Values] = useState([]);
+  const [dataJ03, setDataJ03] = useState([]);
   const [loading, setLoading] = useState(false);
   const handleExpandClick = () => {
     setExpanded((prevExpanded) => !prevExpanded);
@@ -41,6 +43,10 @@ const J04 = () => {
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    fetchJ03Data();
   }, []);
 
   const handleEditClick = () => {
@@ -61,6 +67,21 @@ const J04 = () => {
         setLoading(false);
       });
   };
+
+  const fetchJ03Data = () => {
+    fetch(`https://dbapirest.onrender.com/api/v1/j03`)
+      .then((response) => response.json())
+      .then((data) => {
+        setDataJ03(data);
+        const nominValues = data.map((row) => row.nomin);
+        setJ03Values(nominValues);
+      })
+      .catch((error) => console.error("Error fetching J03 data:", error));
+  };
+
+  useEffect(() => {
+    fetchJ03Data();
+  }, []);
 
   const handleScroll = () => {
     const bottom =
@@ -297,15 +318,13 @@ const J04 = () => {
                     <Select
                       sx={{ width: "390px", height: "30px" }}
                       value={selectedRow.j03 || ""}
-                      onChange={handleNominativoChange}
+                      onChange={(e) => handleNominativoChange(e)}
                     >
-                      {visibleData
-                        .slice()
-                        .filter((row) => row.j03 !== null)
-                        .sort((a, b) => a.j03.localeCompare(b.j03))
-                        .map((row) => (
-                          <MenuItem key={row.j03} value={row.j03}>
-                            {row.j03}
+                      {j03Values
+                        .sort((a, b) => a.charAt(0).localeCompare(b.charAt(0)))
+                        .map((value) => (
+                          <MenuItem key={value} value={value}>
+                            {value}
                           </MenuItem>
                         ))}
                     </Select>
@@ -313,15 +332,13 @@ const J04 = () => {
                     <Select
                       sx={{ width: "390px", height: "30px" }}
                       value={selectedRow.j03 || ""}
-                      onChange={handleNominativoChange}
+                      onChange={(e) => handleNominativoChange(e)}
                     >
-                      {visibleData
-                        .slice()
-                        .filter((row) => row.j03 !== null)
-                        .sort((a, b) => a.j03.localeCompare(b.j03))
-                        .map((row) => (
-                          <MenuItem key={row.j03} value={row.j03}>
-                            {row.j03}
+                      {j03Values
+                        .sort((a, b) => a.charAt(0).localeCompare(b.charAt(0)))
+                        .map((value) => (
+                          <MenuItem key={value} value={value}>
+                            {value}
                           </MenuItem>
                         ))}
                     </Select>

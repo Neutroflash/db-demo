@@ -103,9 +103,8 @@ const Team = () => {
     } else {
       const rowData = getRowDataByJ03(value);
       setSelectedRow((prev) => ({
-        ...prev,
+        ...rowData, // Esto asignará los valores de rowData, o un objeto vacío si rowData es falsy
         j03: value,
-        ...rowData,
       }));
     }
   };
@@ -137,9 +136,7 @@ const Team = () => {
         j04: value,
       }));
     }
-};
-
-  
+  };
 
   const getRowDataByJ03 = (j03Value) => {
     const selectedRow = dataContacts.find((row) => row.j03 === j03Value);
@@ -193,6 +190,36 @@ const Team = () => {
       .catch((error) => console.error("Error al actualizar los datos:", error));
   };
 
+  const handleAddRow = () => {
+    setSelectedRow({
+      j01: getLastJ01() + 1,
+      j03: "",
+      j04: "",
+      j1impiva: "",
+      j1rif_offer: "",
+      j1rif_client: "",
+      j1dat: "",
+      j1titol: "",
+      j1note: "",
+      j1fat_1: "",
+      j1fat_1_rif: "",
+      j1fat_2: "",
+      j1fat_2_rif: "",
+      j1fat_3: "",
+      j1fat_3_rif: "",
+      j1tot_fat: "",
+      sel: false,
+      link_ordine: "",
+      j1_avanz: "",
+      j1_av_data: "",
+    });
+  };
+  
+  const getLastJ01 = () => {
+    const lastJ01 = Math.max(...dataContacts.map((row) => row.j01));
+    return isNaN(lastJ01) ? 0 : lastJ01;
+  };
+  
   const columns = [
     { field: "j01", headerName: "j01", flex: 0.2 },
     { field: "j03", headerName: "j03", flex: 1.4 },
@@ -941,6 +968,18 @@ const Team = () => {
                     >
                       Save
                     </Button>
+                  )}
+                  {isEditing ? null : (
+                    <Box>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleAddRow}
+                        sx={{ width: "60px" }}
+                      >
+                        Add
+                      </Button>
+                    </Box>
                   )}
                 </Box>
               </Grid>

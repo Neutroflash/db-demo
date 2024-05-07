@@ -26,8 +26,11 @@ const Contacts = () => {
   const [selectedRow, setSelectedRow] = useState({});
   const [selectedId, setSelectedId] = useState("");
   const [selectedJ04, setSelectedJ04] = useState("");
+  const [selectedJ01, setSelectedJ01] = useState("");
   const [selectedJ03, setSelectedJ03] = useState({});
   const [j04Options, setJ04Options] = useState([]);
+  const [j01Options, setJ01Options] = useState([]);
+  const [j01CommData, setJ01CommData] = useState([]);
   const [selectedJ02Click, setSelectedJ02Click] = useState(null);
   const [dataJ03, setDataJ03] = useState([]);
   const [expanded, setExpanded] = useState(false);
@@ -67,6 +70,15 @@ const Contacts = () => {
         setJ04Options(data);
       })
       .catch((error) => console.error("Error fetching j04 options:", error));
+  }, []);
+
+  useEffect(() => {
+    fetch(`https://dbapirest.onrender.com/api/v1/postgres`)
+      .then((response) => response.json())
+      .then((data) => {
+        setJ01Options(data);
+      })
+      .catch((error) => console.error("Error fetching j01 options:", error));
   }, []);
 
   const handleEditClick = () => {
@@ -144,7 +156,6 @@ const Contacts = () => {
     }
   };
 
-
   const handleIdChange = (event) => {
     const selectedJ02 = event.target.value;
     setSelectedId(selectedJ02);
@@ -161,24 +172,47 @@ const Contacts = () => {
   const handleJ04Change = (event) => {
     const selectedJ04 = event.target.value;
     setSelectedJ04(selectedJ04);
-  
+
     if (isEditing) {
       setSelectedRow((prevRow) => ({
         ...prevRow,
         j04: selectedJ04,
       }));
     } else {
-      const selectedRow = dataContacts.find((row) => row.j04 === selectedJ04) || {};
+      const selectedRow =
+        dataContacts.find((row) => row.j04 === selectedJ04) || {};
       setSelectedRow(selectedRow);
-  
+
       const selectedJ02 = selectedRow.j02 || "";
       setSelectedId(selectedJ02);
-  
+
       const selectedJ03 = selectedRow.j03 || "";
       fetchJ03Data(selectedJ02, selectedJ03);
     }
   };
-  
+
+  const handleJ01Change = (event) => {
+    const selectedJ01 = event.target.value;
+    setSelectedJ01(selectedJ01);
+
+    if (isEditing) {
+      setSelectedRow((prevRow) => ({
+        ...prevRow,
+        j01: selectedJ01,
+      }));
+    } else {
+      const selectedRow =
+        j01Options.find((row) => row.j01 === selectedJ01) || {};
+      setSelectedRow(selectedRow);
+
+      const selectedJ03 = selectedRow.j03 || "";
+      const selectedJ04 = selectedRow.j04 || "";
+      setSelectedId(selectedJ04);
+
+      // Fetch data for J03 based on selectedJ04
+      fetchJ03Data(selectedJ04, selectedJ03);
+    }
+  };
 
   const handleFieldChange = (field, value) => {
     setInvoiceData((prevData) => ({
@@ -377,75 +411,86 @@ const Contacts = () => {
                   >
                     J01:{" "}
                     {isEditing ? (
-                      <TextField
+                      <Select
                         variant="outlined"
-                        size="small"
-                        value={selectedRow.j01 || ""}
-                        onChange={(e) => {
-                          const value =
-                            e.target.value === "" ? null : e.target.value;
-                          setSelectedRow((prev) => ({
-                            ...prev,
-                            j01: value,
-                          }));
+                        value={selectedRow.j01}
+                        onChange={handleJ01Change}
+                        fullWidth
+                        style={{ marginLeft: "10px" }}
+                        sx={{
+                          width: "74px",
+                          backgroundColor: "#FFD3D3",
+                          maxHeight: "250px",
                         }}
-                        sx={{ marginLeft: "4px", width: "60px" }}
-                      />
+                        MenuProps={{ style: { maxHeight: "450px" } }}
+                      >
+                        {j01Options.map((option) => (
+                          <MenuItem key={option.j01} value={option.j01}>
+                            {option.j01}
+                          </MenuItem>
+                        ))}
+                      </Select>
                     ) : (
                       <Box
-                        component="span"
+                        component="div"
                         sx={{
-                          border: 1,
-                          padding: 1,
-                          borderRadius: "5px",
-                          borderColor: "#FFBAAB",
-                          minWidth: "40px",
-                          minHeight: "40px",
-                          display: "inline-block",
+                          display: "flex",
+                          marginLeft: "10px",
                           backgroundColor: "#FFD3D3",
+                          padding: "6px 12px",
+                          width: "60px",
+                          minHeight: "50px",
+                          borderRadius: "4px",
+                          textAlign: "center",
+                          alignItems: "center"
                         }}
                       >
-                        {selectedRow.j01 || ""}
+                        {selectedRow.j01}
                       </Box>
                     )}
                   </Typography>
+
                   <Typography>
                     J04:
                     {isEditing ? (
                       <Suspense fallback={<div>Loading...</div>}>
-                      <Select
-                        variant="outlined"
-                        value={selectedJ04}
-                        onChange={handleJ04Change}
-                        fullWidth
-                        style={{ marginLeft: "10px" }}
-                        sx={{ width: "74px", backgroundColor: "#D3FFEE", maxHeight: "250px" }}
-                        MenuProps={{ style: { maxHeight: "450px" } }}
-                      >
-                        {j04Options.map((option) => (
-                          <MenuItem key={option.j04} value={option.j04}>
-                            {option.j04}
-                          </MenuItem>
-                        ))}
-                      </Select>
+                        <Select
+                          variant="outlined"
+                          value={selectedJ04}
+                          onChange={handleJ04Change}
+                          fullWidth
+                          style={{ marginLeft: "10px" }}
+                          sx={{
+                            width: "74px",
+                            backgroundColor: "#D3FFEE",
+                            maxHeight: "250px",
+                          }}
+                          MenuProps={{ style: { maxHeight: "450px" } }}
+                        >
+                          {j04Options.map((option) => (
+                            <MenuItem key={option.j04} value={option.j04}>
+                              {option.j04}
+                            </MenuItem>
+                          ))}
+                        </Select>
                       </Suspense>
                     ) : (
                       <Suspense fallback={<div>Loading...</div>}>
-                      <Select
-                        variant="outlined"
-                        value={selectedJ04}
-                        onChange={handleJ04Change}
-                        fullWidth
-                        style={{ marginLeft: "10px" }}
-                        sx={{ width: "74px", backgroundColor: "#D3FFEE" }}
-                        MenuProps={{ style: { maxHeight: "450px" } }}
-                      >
-                        {j04Options.map((option) => (
-                          <MenuItem key={option.j04} value={option.j04}>
-                            {option.j04}
-                          </MenuItem>
-                        ))}
-                      </Select>
+                        <Select
+                          variant="outlined"
+                          value={selectedJ04}
+                          onChange={handleJ04Change}
+                          fullWidth
+                          style={{ marginLeft: "10px" }}
+                          sx={{ width: "74px", backgroundColor: "#D3FFEE" }}
+                          MenuProps={{ style: { maxHeight: "450px" } }}
+                        >
+                          {j04Options.map((option) => (
+                            <MenuItem key={option.j04} value={option.j04}>
+                              {option.j04}
+                            </MenuItem>
+                          ))}
+                        </Select>
                       </Suspense>
                     )}
                   </Typography>

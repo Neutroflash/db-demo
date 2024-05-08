@@ -40,9 +40,12 @@ const Team = () => {
 
   const [j03Values, setJ03Values] = useState([]);
   const [dataJ03, setDataJ03] = useState([]);
+  const [isAddingRow, setIsAddingRow] = useState(false);
   const backendUrl = "https://dbapirest.onrender.com/api/v1/postgres";
   const fecha = selectedRow.j1dat ? new Date(selectedRow.j1dat) : null;
+  const fecha2 = selectedRow.j1_av_data ? new Date(selectedRow.j1_av_data): null;
   const fechaFormateada = fecha ? fecha.toISOString().split("T")[0] : "";
+  const fechaFormateada2 = fecha2 ? fecha2.toISOString().split("T")[0] : "";
   const handleExpandClick = () => {
     setExpanded((prevExpanded) => !prevExpanded);
   };
@@ -95,7 +98,7 @@ const Team = () => {
   };
 
   const handleClientiChange = (value) => {
-    if (isEditing) {
+    if (isEditing || isAddingRow) {
       setSelectedRow((prev) => ({
         ...prev,
         j03: value,
@@ -110,7 +113,7 @@ const Team = () => {
   };
 
   const handleJ04Change = (value) => {
-    if (isEditing) {
+    if (isEditing || isAddingRow) {
       setSelectedRow((prev) => ({
         ...prev,
         j04: value,
@@ -144,6 +147,12 @@ const Team = () => {
   };
 
   const handleSaveClick = () => {
+    const j1fat_1 = selectedRow.j1fat_1 !== "" ? parseFloat(selectedRow.j1fat_1) : 0;
+    const j1fat_2 = selectedRow.j1fat_2 !== "" ? parseFloat(selectedRow.j1fat_2) : 0;
+    const j1fat_3 = selectedRow.j1fat_3 !== "" ? parseFloat(selectedRow.j1fat_3) : 0;
+
+    const j1tot_fat = j1fat_1 + j1fat_2 + j1fat_3;
+
     // Construir el objeto con los datos actualizados
     const updatedData = {
       j01: selectedRow.j01,
@@ -155,13 +164,13 @@ const Team = () => {
       j1dat: selectedRow.j1dat,
       j1titol: selectedRow.j1titol,
       j1note: selectedRow.j1note,
-      j1fat_1: selectedRow.j1fat_1,
+      j1fat_1: j1fat_1.toFixed(2),
       j1fat_1_rif: selectedRow.j1fat_1_rif,
-      j1fat_2: selectedRow.j1fat_2,
+      j1fat_2: j1fat_2.toFixed(2),
       j1fat_2_rif: selectedRow.j1fat_2_rif,
-      j1fat_3: selectedRow.j1fat_3,
+      j1fat_3: j1fat_3.toFixed(2),
       j1fat_3_rif: selectedRow.j1fat_3_rif,
-      j1tot_fat: selectedRow.j1tot_fat,
+      j1tot_fat: j1tot_fat.toFixed(2),
       sel: selectedRow.sel,
       link_ordine: selectedRow.link_ordine,
       j1_avanz: selectedRow.j1_avanz,
@@ -186,11 +195,14 @@ const Team = () => {
         );
         setDataContacts(updatedList);
         setIsEditing(false); // Deshabilitar el modo de edición
+        setSelectedRow(updatedData);
       })
       .catch((error) => console.error("Error al actualizar los datos:", error));
-  };
+};
+
 
   const handleAddRow = () => {
+    setIsAddingRow(true);
     setSelectedRow({
       j01: getLastJ01() + 1,
       j03: "",
@@ -213,13 +225,41 @@ const Team = () => {
       j1_avanz: "",
       j1_av_data: "",
     });
+
+    handleSaveAddRow();
   };
-  
+
   const getLastJ01 = () => {
     const lastJ01 = Math.max(...dataContacts.map((row) => row.j01));
     return isNaN(lastJ01) ? 0 : lastJ01;
   };
+
+  const handleSaveAddRow = () => {
+    fetch(`${backendUrl}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(selectedRow),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to add new row");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("New row added:", data);
+        // Actualizar el estado o realizar cualquier acción necesaria después de agregar la fila
+        fetchData(); // Actualizar la data
+        setIsAddingRow(false); // Cerrar el modo de añadir
+      })
+      .catch((error) => {
+        console.error("Error adding new row:", error);
+      });
+  };
   
+
   const columns = [
     { field: "j01", headerName: "j01", flex: 0.2 },
     { field: "j03", headerName: "j03", flex: 1.4 },
@@ -419,7 +459,7 @@ const Team = () => {
                     }}
                   >
                     Ordine Cliente:{" "}
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         sx={{ width: "180px" }}
                         variant="outlined"
@@ -452,6 +492,7 @@ const Team = () => {
                     )}
                   </Typography>
                 </Box>
+
                 {/* Titolo */}
                 <Box>
                   <Typography
@@ -462,7 +503,7 @@ const Team = () => {
                     }}
                   >
                     Titolo:
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         sx={{ width: "90%" }}
                         variant="outlined"
@@ -501,7 +542,7 @@ const Team = () => {
                     sx={{ display: "flex", alignItems: "center", gap: "5px" }}
                   >
                     Note:
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         multiline
                         sx={{ width: "90%" }}
@@ -539,7 +580,7 @@ const Team = () => {
               </Grid>
               <Grid
                 item
-                xs={3}
+                xs={2.5}
                 sx={{
                   display: "flex",
                   flexDirection: "column",
@@ -557,7 +598,7 @@ const Team = () => {
                     }}
                   >
                     Data-ordine:{" "}
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         sx={{ width: "120px" }}
                         type="date"
@@ -601,7 +642,7 @@ const Team = () => {
                     }}
                   >
                     Ordine-Imp IVA:
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         sx={{ width: "100px" }}
                         variant="outlined"
@@ -647,12 +688,12 @@ const Team = () => {
                     }}
                   >
                     Clienti:
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <Select
                         value={selectedRow.j03 || ""}
                         onChange={(e) => handleClientiChange(e.target.value)}
                         sx={{
-                          width: "300px",
+                          width: "240px",
                           minHeight: "40px",
                           fontSize: "11px",
                           backgroundColor: "#FBFF80",
@@ -671,7 +712,7 @@ const Team = () => {
                         value={selectedRow.j03 || ""}
                         onChange={(e) => handleClientiChange(e.target.value)}
                         sx={{
-                          width: "300px",
+                          width: "240px",
                           minHeight: "40px",
                           fontSize: "11px",
                           backgroundColor: "#FBFF80",
@@ -710,7 +751,7 @@ const Team = () => {
                         fontSize: "12px",
                       }}
                     >
-                      {isEditing ? (
+                      {isEditing || isAddingRow ? (
                         <Suspense fallback={<div>Loading...</div>}>
                           <Select
                             value={selectedRow.j04 || ""}
@@ -759,11 +800,11 @@ const Team = () => {
                           padding: 1,
                           borderRadius: "5px",
                           borderColor: "#C9FFB5",
-                          width: "200px",
+                          width: "150px",
                           minHeight: "50px",
                           display: "inline-block",
                           backgroundColor: "#C9FFB5",
-                          fontSize: "12px",
+                          fontSize: "11px",
                           textAlign: "center",
                         }}
                       >
@@ -778,170 +819,540 @@ const Team = () => {
               </Grid>
               <Grid
                 item
-                xs={2.5}
+                xs={2.2}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  {/* J1fat_1 */}
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-evenly",
+                      fontSize: "11px",
+                    }}
+                  >
+                    J1fat_1:{" "}
+                    {isEditing || isAddingRow ? (
+                      <TextField
+                        variant="outlined"
+                        size="small"
+                        value={selectedRow.j1fat_1 || ""}
+                        onChange={(e) =>
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            j1fat_1: e.target.value,
+                          }))
+                        }
+                        sx={{ width: "90px" }}
+                      />
+                    ) : (
+                      <Box
+                        component="span"
+                        sx={{
+                          border: 1,
+                          padding: 1,
+                          borderRadius: "5px",
+                          borderColor: "#DCDCDC",
+                          minWidth: "70px",
+                          minHeight: "30px",
+                          display: "inline-block",
+                          backgroundColor: "#DCDCDC",
+                          marginLeft: "8px",
+                          fontSize: "11px",
+                        }}
+                      >
+                        {selectedRow.j1fat_1 !== null &&
+                        selectedRow.j1fat_1 !== undefined &&
+                        selectedRow.j1fat_1.trim() !== ""
+                          ? `€ ${selectedRow.j1fat_1}`
+                          : "0"}
+                      </Box>
+                    )}
+                  </Typography>
+                  {/* J1fat_2 */}
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-evenly",
+                      fontSize: "11px",
+                    }}
+                  >
+                    J1fat_2:{" "}
+                    {isEditing || isAddingRow ? (
+                      <TextField
+                        variant="outlined"
+                        size="small"
+                        value={selectedRow.j1fat_2 || ""}
+                        onChange={(e) =>
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            j1fat_2: e.target.value,
+                          }))
+                        }
+                        sx={{ width: "90px" }}
+                      />
+                    ) : (
+                      <Box
+                        component="span"
+                        sx={{
+                          border: 1,
+                          padding: 1,
+                          borderRadius: "5px",
+                          borderColor: "#DCDCDC",
+                          minWidth: "70px",
+                          minHeight: "30px",
+                          display: "inline-block",
+                          backgroundColor: "#DCDCDC",
+                          marginLeft: "8px",
+                          fontSize: "11px",
+                        }}
+                      >
+                        {selectedRow.j1fat_2 !== null &&
+                        selectedRow.j1fat_2 !== undefined &&
+                        selectedRow.j1fat_2.trim() !== ""
+                          ? `€ ${selectedRow.j1fat_2}`
+                          : "0"}
+                      </Box>
+                    )}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-evenly",
+                      fontSize: "11px",
+                    }}
+                  >
+                    J1fat_3:{" "}
+                    {isEditing || isAddingRow ? (
+                      <TextField
+                        variant="outlined"
+                        size="small"
+                        value={selectedRow.j1fat_3 || ""}
+                        onChange={(e) =>
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            j1fat_3: e.target.value,
+                          }))
+                        }
+                        sx={{ width: "90px" }}
+                      />
+                    ) : (
+                      <Box
+                        component="span"
+                        sx={{
+                          border: 1,
+                          padding: 1,
+                          borderRadius: "5px",
+                          borderColor: "#DCDCDC",
+                          minWidth: "70px",
+                          minHeight: "30px",
+                          display: "inline-block",
+                          backgroundColor: "#DCDCDC",
+                          marginLeft: "8px",
+                          fontSize: "11px",
+                        }}
+                      >
+                        {selectedRow.j1fat_3 !== null &&
+                        selectedRow.j1fat_3 !== undefined &&
+                        selectedRow.j1fat_3.trim() !== ""
+                          ? `€ ${selectedRow.j1fat_3}`
+                          : "0"}
+                      </Box>
+                    )}
+                  </Typography>
+                  {/* J1tot_fat */}
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-evenly",
+                      fontSize: "11px",
+                    }}
+                  >
+                    J1tot_fat:{" "}
+                    <Box
+                      component="span"
+                      sx={{
+                        border: 1,
+                        padding: 1,
+                        borderRadius: "5px",
+                        borderColor: "#DCDCDC",
+                        minWidth: "70px",
+                        minHeight: "30px",
+                        display: "inline-block",
+                        backgroundColor: "#DCDCDC",
+                        marginLeft: "8px",
+                        fontSize: "11px",
+                      }}
+                    >
+                      {selectedRow.j1tot_fat !== null &&
+                      selectedRow.j1tot_fat !== undefined &&
+                      selectedRow.j1tot_fat.trim() !== ""
+                        ? `€ ${selectedRow.j1tot_fat}`
+                        : "0"}
+                    </Box>
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{ display: "flex", flexDirection: "column", gap: "25px" }}
+                >
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-evenly",
+                      fontSize: "11px",
+                    }}
+                  >
+                    J1fat_1_rif:{" "}
+                    {isEditing || isAddingRow ? (
+                      <TextField
+                        variant="outlined"
+                        size="small"
+                        value={selectedRow.j1fat_1_rif || ""}
+                        onChange={(e) =>
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            j1fat_1_rif: e.target.value,
+                          }))
+                        }
+                        sx={{ width: "90px" }}
+                      />
+                    ) : (
+                      <Box
+                        component="span"
+                        sx={{
+                          border: 1,
+                          padding: 1,
+                          borderRadius: "5px",
+                          borderColor: "#DCDCDC",
+                          minWidth: "90px",
+                          minHeight: "30px",
+                          display: "inline-block",
+                          backgroundColor: "#DCDCDC",
+                          marginLeft: "8px",
+                          fontSize: "11px",
+                        }}
+                      >
+                        {selectedRow.j1fat_1_rif}
+                      </Box>
+                    )}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-evenly",
+                      fontSize: "11px",
+                    }}
+                  >
+                    J1fat_2_rif:{" "}
+                    {isEditing || isAddingRow ? (
+                      <TextField
+                        variant="outlined"
+                        size="small"
+                        value={selectedRow.j1fat_2_rif || ""}
+                        onChange={(e) =>
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            j1fat_2_rif: e.target.value,
+                          }))
+                        }
+                        sx={{ width: "90px" }}
+                      />
+                    ) : (
+                      <Box
+                        component="span"
+                        sx={{
+                          border: 1,
+                          padding: 1,
+                          borderRadius: "5px",
+                          borderColor: "#DCDCDC",
+                          minWidth: "70px",
+                          minHeight: "30px",
+                          display: "inline-block",
+                          backgroundColor: "#DCDCDC",
+                          marginLeft: "8px",
+                          fontSize: "11px",
+                        }}
+                      >
+                        {selectedRow.j1fat_2_rif}
+                      </Box>
+                    )}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-evenly",
+                      fontSize: "11px",
+                    }}
+                  >
+                    J1fat_3_rif:{" "}
+                    {isEditing || isAddingRow ? (
+                      <TextField
+                        variant="outlined"
+                        size="small"
+                        value={selectedRow.j1fat_3_rif || ""}
+                        onChange={(e) =>
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            j1fat_3_rif: e.target.value,
+                          }))
+                        }
+                        sx={{ width: "90px" }}
+                      />
+                    ) : (
+                      <Box
+                        component="span"
+                        sx={{
+                          border: 1,
+                          padding: 1,
+                          borderRadius: "5px",
+                          borderColor: "#DCDCDC",
+                          minWidth: "70px",
+                          minHeight: "30px",
+                          display: "inline-block",
+                          backgroundColor: "#DCDCDC",
+                          marginLeft: "8px",
+                          fontSize: "11px",
+                        }}
+                      >
+                        {selectedRow.j1fat_3_rif}
+                      </Box>
+                    )}
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid
+                item
+                xs={2.3}
                 sx={{
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
                 }}
               >
-                {/* Link-ordine */}
-                <Typography
+                <Box
                   sx={{
                     display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-evenly",
+                    flexDirection: "column",
+                    gap: "10px"
                   }}
                 >
-                  Link-ordine:{" "}
-                  {isEditing ? (
-                    <TextField
-                      variant="outlined"
-                      size="small"
-                      value={selectedRow.link_ordine || ""}
-                      onChange={(e) =>
-                        setSelectedRow((prev) => ({
-                          ...prev,
-                          link_ordine: e.target.value,
-                        }))
-                      }
-                      sx={{ width: "170px" }}
-                    />
-                  ) : (
-                    <Box
-                      component="span"
-                      sx={{
-                        border: 1,
-                        padding: 1,
-                        borderRadius: "5px",
-                        borderColor: "#FFBAAB",
-                        width: "170px",
-                        minHeight: "30px",
-                        display: "inline-block",
-                        backgroundColor: "#FFD3D3",
-                        fontSize: "10px",
-                      }}
-                    >
-                      {selectedRow.link_ordine || ""}
-                    </Box>
-                  )}
-                </Typography>
-                {/* Avanzamento */}
-                <Typography
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginLeft: "20px",
-                    gap: "15px",
-                  }}
-                >
-                  Avanzamento:{" "}
-                  {isEditing ? (
-                    <TextField
-                      variant="outlined"
-                      size="small"
-                      value={selectedRow.j1_avanz || ""}
-                      onChange={(e) =>
-                        setSelectedRow((prev) => ({
-                          ...prev,
-                          j1_avanz: e.target.value,
-                        }))
-                      }
-                      sx={{ width: "40px" }}
-                    />
-                  ) : (
-                    <Box
-                      component="span"
-                      sx={{
-                        border: 1,
-                        padding: 1,
-                        borderRadius: "5px",
-                        borderColor: "#FFBAAB",
-                        width: "40px",
-                        minHeight: "30px",
-                        display: "inline-block",
-                        backgroundColor: "#FFD3D3",
-                        fontSize: "10px",
-                      }}
-                    >
-                      {selectedRow.j1_avanz
-                        ? `${selectedRow.j1_avanz * 100}%`
-                        : ""}
-                    </Box>
-                  )}
-                </Typography>
-                <Typography
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-evenly",
-                    gap: "30px",
-                  }}
-                >
-                  offerta:{" "}
-                  {isEditing ? (
-                    <TextField
-                      variant="outlined"
-                      size="small"
-                      value={selectedRow.j1rif_offer || ""}
-                      onChange={(e) =>
-                        setSelectedRow((prev) => ({
-                          ...prev,
-                          j1rif_offer: e.target.value,
-                        }))
-                      }
-                      sx={{ width: "170px" }}
-                    />
-                  ) : (
-                    <Box
-                      component="span"
-                      sx={{
-                        border: 1,
-                        padding: 1,
-                        borderRadius: "5px",
-                        borderColor: "#FFBAAB",
-                        width: "170px",
-                        minHeight: "30px",
-                        display: "inline-block",
-                        backgroundColor: "#FFD3D3",
-                        fontSize: "10px",
-                      }}
-                    >
-                      {selectedRow.j1rif_offer}
-                    </Box>
-                  )}
-                </Typography>
-                {/* Ordine fatturato */}
-                <Typography
-                  sx={{
-                    display: "flex",
-                    marginLeft: "20px",
-                    alignItems: "center",
-                    gap: "50px",
-                  }}
-                >
-                  Ordine fatturato:{" "}
-                  {isEditing ? (
-                    <Checkbox
-                      checked={selectedRow.sel}
-                      color="primary"
-                      onChange={(e) =>
-                        setSelectedRow((prev) => ({
-                          ...prev,
-                          sel: e.target.checked,
-                        }))
-                      }
-                      inputProps={{ "aria-label": "controlled" }}
-                    />
-                  ) : (
-                    <Checkbox
-                      checked={selectedRow.sel}
-                      disabled
-                      color="primary"
-                      inputProps={{ "aria-label": "controlled" }}
-                    />
-                  )}
-                </Typography>
+                  {/* Link-ordine */}
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-evenly",
+                    }}
+                  >
+                    Link-ordine:{" "}
+                    {isEditing || isAddingRow ? (
+                      <TextField
+                        variant="outlined"
+                        size="small"
+                        value={selectedRow.link_ordine || ""}
+                        onChange={(e) =>
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            link_ordine: e.target.value,
+                          }))
+                        }
+                        sx={{ width: "170px" }}
+                      />
+                    ) : (
+                      <Box
+                        component="span"
+                        sx={{
+                          border: 1,
+                          padding: 1,
+                          borderRadius: "5px",
+                          borderColor: "#FFBAAB",
+                          width: "170px",
+                          minHeight: "30px",
+                          display: "inline-block",
+                          backgroundColor: "#FFD3D3",
+                          fontSize: "10px",
+                        }}
+                      >
+                        {selectedRow.link_ordine || ""}
+                      </Box>
+                    )}
+                  </Typography>
+                  {/* Avanzamento */}
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginLeft: "20px",
+                      gap: "15px",
+                      fontSize: "11px"
+                    }}
+                  >
+                    Avanzamento:{" "}
+                    {isEditing || isAddingRow ? (
+                      <TextField
+                        variant="outlined"
+                        size="small"
+                        value={selectedRow.j1_avanz || ""}
+                        onChange={(e) =>
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            j1_avanz: e.target.value,
+                          }))
+                        }
+                        sx={{ width: "60px" }}
+                      />
+                    ) : (
+                      <Box
+                        component="span"
+                        sx={{
+                          border: 1,
+                          padding: 1,
+                          borderRadius: "5px",
+                          borderColor: "#FFBAAB",
+                          width: "40px",
+                          minHeight: "30px",
+                          display: "inline-block",
+                          backgroundColor: "#FFD3D3",
+                          fontSize: "10px",
+                        }}
+                      >
+                        {selectedRow.j1_avanz
+                          ? `${selectedRow.j1_avanz * 100}%`
+                          : ""}
+                      </Box>
+                    )}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-evenly",
+                      gap: "30px",
+                    }}
+                  >
+                    offerta:{" "}
+                    {isEditing || isAddingRow ? (
+                      <TextField
+                        variant="outlined"
+                        size="small"
+                        value={selectedRow.j1rif_offer || ""}
+                        onChange={(e) =>
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            j1rif_offer: e.target.value,
+                          }))
+                        }
+                        sx={{ width: "170px" }}
+                      />
+                    ) : (
+                      <Box
+                        component="span"
+                        sx={{
+                          border: 1,
+                          padding: 1,
+                          borderRadius: "5px",
+                          borderColor: "#FFBAAB",
+                          width: "170px",
+                          minHeight: "30px",
+                          display: "inline-block",
+                          backgroundColor: "#FFD3D3",
+                          fontSize: "10px",
+                        }}
+                      >
+                        {selectedRow.j1rif_offer}
+                      </Box>
+                    )}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginLeft: "20px",
+                      gap: "15px",
+                    }}
+                  >
+                    J1_av_data:{" "}
+                    {isEditing || isAddingRow ? (
+                      <TextField
+                        sx={{ width: "120px" }}
+                        type="date"
+                        variant="outlined"
+                        size="small"
+                        value={fechaFormateada2}
+                        onChange={(e) =>
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            j1_av_data: e.target.value,
+                          }))
+                        }
+                      />
+                    ) : (
+                      <Box
+                        component="span"
+                        sx={{
+                          border: 1,
+                          padding: 1,
+                          borderRadius: "5px",
+                          borderColor: "#FFBAAB",
+                          minWidth: "70px",
+                          minHeight: "30px",
+                          display: "inline-block",
+                          backgroundColor: "#FFD3D3",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {fechaFormateada2 ? fechaFormateada2 : ""}
+                      </Box>
+                    )}
+                  </Typography>
+                  {/* Ordine fatturato */}
+                  <Typography
+                    sx={{
+                      display: "flex",
+                      marginLeft: "20px",
+                      alignItems: "center",
+                      gap: "20px",
+                    }}
+                  >
+                    Ordine fatturato:{" "}
+                    {isEditing || isAddingRow ? (
+                      <Checkbox
+                        checked={selectedRow.sel}
+                        color="primary"
+                        onChange={(e) =>
+                          setSelectedRow((prev) => ({
+                            ...prev,
+                            sel: e.target.checked,
+                          }))
+                        }
+                        inputProps={{ "aria-label": "controlled" }}
+                      />
+                    ) : (
+                      <Checkbox
+                        checked={selectedRow.sel}
+                        disabled
+                        color="primary"
+                        inputProps={{ "aria-label": "controlled" }}
+                      />
+                    )}
+                  </Typography>
+                </Box>
               </Grid>
               <Grid
                 item
@@ -969,7 +1380,17 @@ const Team = () => {
                       Save
                     </Button>
                   )}
-                  {isEditing ? null : (
+                  {isAddingRow ? (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleSaveAddRow}
+                      disabled={!selectedRow.j03 || !selectedRow.j04}
+                      sx={{ width: "60px" }}
+                    >
+                      Save
+                    </Button>
+                  ) : (
                     <Box>
                       <Button
                         variant="contained"

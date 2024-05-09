@@ -31,6 +31,7 @@ const Invoices = () => {
   const [expanded, setExpanded] = useState(false);
   const backendUrl = "https://dbapirest.onrender.com/api/v1/j03";
   const [visibleData, setVisibleData] = useState([]);
+  const [isAddingRow, setIsAddingRow] = useState(false);
 
   
   useEffect(() => {
@@ -96,6 +97,58 @@ const Invoices = () => {
     );
     setSelectedRow(selectedRowData || {});
     console.log("selected row: ", selectedClick);
+  };
+
+  const handleAddRow = () => {
+    setIsAddingRow(true);
+    setSelectedRow({
+      j03: getLastJ03() + 1,
+      nomin: "",
+      plva: "",
+      cfisc: "",
+      nomcitta: "",
+      nomcap: "",
+      nomindirizzo: "",
+      nomprov: "",
+      nomnote: "",
+      codident: "",
+      pec: "",
+    });
+  };
+
+  const getLastJ03 = () => {
+    if (dataContacts.length === 0) {
+      return 1; // Si no hay contactos, comenzar desde 1
+    }
+    const lastJ03 = Math.max(...dataContacts.map((row) => row.j03));
+    return lastJ03 + 1; // Devolver el máximo + 1
+  };
+
+  const handleSaveAddRow = () => {
+    fetch(`${backendUrl}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(selectedRow),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to add new row");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("New row added:", data);
+        setDataContacts([...dataContacts, selectedRow]); // Actualizar estado local con la fila agregada
+        setIsAddingRow(false); // Cerrar el modo de añadir
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error("Error adding new row:", error);
+        window.location.reload();
+      })
+
   };
 
   const columns = [
@@ -221,7 +274,7 @@ const Invoices = () => {
                   }}
                 >
                   Nomin:{" "}
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.nomin || ""}
                       onChange={(e) =>
@@ -259,7 +312,7 @@ const Invoices = () => {
                   }}
                 >
                   Plva:{" "}
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.plva || ""}
                       onChange={(e) =>
@@ -298,7 +351,7 @@ const Invoices = () => {
                   }}
                 >
                   Cfisc:{" "}
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.cfisc || ""}
                       onChange={(e) =>
@@ -337,7 +390,7 @@ const Invoices = () => {
                   }}
                 >
                   Nomcitta:{" "}
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.nomcitta || ""}
                       onChange={(e) =>
@@ -388,7 +441,7 @@ const Invoices = () => {
                   }}
                 >
                   Nomcap:{" "}
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.nomcap || ""}
                       onChange={(e) =>
@@ -426,7 +479,7 @@ const Invoices = () => {
                   }}
                 >
                   Nomindirizzo:{" "}
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.nomindirizzo || ""}
                       onChange={(e) =>
@@ -464,7 +517,7 @@ const Invoices = () => {
                   }}
                 >
                   Nomprov:{" "}
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.nomprov || ""}
                       onChange={(e) =>
@@ -502,7 +555,7 @@ const Invoices = () => {
                   }}
                 >
                   Nomnote:{" "}
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.nomnote || ""}
                       onChange={(e) =>
@@ -540,7 +593,7 @@ const Invoices = () => {
                   }}
                 >
                   Codident:{" "}
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.codident || ""}
                       onChange={(e) =>
@@ -578,7 +631,7 @@ const Invoices = () => {
                   }}
                 >
                   Pec:{" "}
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.pec || ""}
                       onChange={(e) =>
@@ -609,9 +662,9 @@ const Invoices = () => {
                   )}
                 </Typography>
               </Grid>
-              <Grid item xs={2}>
+              <Grid item xs={2} sx={{ display: "flex", flexDirection: "column" }}>
                 <Box
-                  sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
+                  sx={{ display: "flex", flexDirection: "column", gap: "20px" }}
                 >
                   <Button
                     variant="contained"
@@ -630,6 +683,30 @@ const Invoices = () => {
                     >
                       Save
                     </Button>
+                  )}
+                  {isAddingRow ? (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        handleSaveAddRow();
+                      }}
+                      
+                      sx={{ width: "60px" }}
+                    >
+                      Save
+                    </Button>
+                  ) : (
+                    <Box>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleAddRow}
+                        sx={{ width: "60px" }}
+                      >
+                        Add
+                      </Button>
+                    </Box>
                   )}
                 </Box>
               </Grid>

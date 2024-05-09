@@ -211,9 +211,10 @@ const Team = () => {
   };
 
   const handleAddRow = () => {
+    console.log("Lista de dataContacts antes de la inserción:", dataContacts);
     setIsAddingRow(true);
     setSelectedRow({
-      j01: getLastJ01() + 1,
+      j01: getLastJ01(),
       j03: "",
       j04: "",
       j1impiva: "",
@@ -234,13 +235,14 @@ const Team = () => {
       j1_avanz: "",
       j1_av_data: "",
     });
-
-    handleSaveAddRow();
   };
 
   const getLastJ01 = () => {
+    if (dataContacts.length === 0) {
+      return 1; // Si no hay contactos, comenzar desde 1
+    }
     const lastJ01 = Math.max(...dataContacts.map((row) => row.j01));
-    return isNaN(lastJ01) ? 0 : lastJ01;
+    return lastJ01 + 1; // Devolver el máximo + 1
   };
 
   const handleSaveAddRow = () => {
@@ -258,12 +260,14 @@ const Team = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("New row added:", data);
-        setDataContacts([...dataContacts, selectedRow]); // Actualizar estado local con la fila agregada
+        console.log("Data received from server:", data); 
+        setDataContacts([...dataContacts, data]); // Actualizar estado local con la fila agregada
         setIsAddingRow(false); // Cerrar el modo de añadir
+        window.location.reload();
       })
       .catch((error) => {
         console.error("Error adding new row:", error);
+        window.location.reload();
       })
 
   };

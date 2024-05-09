@@ -37,6 +37,7 @@ const J04 = () => {
   const [j03Values, setJ03Values] = useState([]);
   const [dataJ03, setDataJ03] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isAddingRow, setIsAddingRow] = useState(false);
   const handleExpandClick = () => {
     setExpanded((prevExpanded) => !prevExpanded);
   };
@@ -102,26 +103,6 @@ const J04 = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [visibleData, dataContacts, loading]);
 
-  const columns = [
-    { field: "j04", headerName: "j04", flex: 0.2 },
-    { field: "j03", headerName: "j03", flex: 0.9 },
-    { field: "cartnomold", headerName: "cartnomold", flex: 1 },
-    {
-      field: "cartref",
-      headerName: "cartref",
-      type: "number",
-      headerAlign: "left",
-      align: "left",
-      flex: 0.4,
-    },
-    { field: "cartrif", headerName: "cartrif", flex: 0.2 },
-    { field: "cartcoord", headerName: "cartcoord", flex: 0.3 },
-    { field: "cartpag", headerName: "cartpag", flex: 1.2 },
-    { field: "cartdescr", headerName: "cartdescr", flex: 1 },
-    { field: "cartdata", headerName: "cartdata", flex: 0.36 },
-    { field: "cartnote", headerName: "cartnote", flex: 1 },
-  ];
-
   const handleRowClick = (params) => {
     const selectedClick = params.row.j04;
     const selectedRowData = dataContacts.find(
@@ -134,7 +115,7 @@ const J04 = () => {
   const handleNominativoChange = (e) => {
     const selectedJ03 = e.target.value;
 
-    if (isEditing) {
+    if (isEditing || isAddingRow) {
       setSelectedRow((prev) => ({
         ...prev,
         j03: selectedJ03,
@@ -184,6 +165,75 @@ const J04 = () => {
       .catch((error) => console.error("Error al actualizar los datos:", error));
   };
 
+
+  const handleAddRow = () => {
+    setIsAddingRow(true);
+    setSelectedRow({
+      j04: getLastJ04() + 1,
+      j03: "",
+      cartref: "",
+      cartrif: "",
+      cartcoord: "",
+      cartpag: "",
+      cartdescr: "",
+      cartdata: "",
+      cartnote: "",
+    });
+  };
+
+  const getLastJ04 = () => {
+    if (dataContacts.length === 0) {
+      return 1; // Si no hay contactos, comenzar desde 1
+    }
+    const lastJ04 = Math.max(...dataContacts.map((row) => row.j04));
+    return lastJ04; // Devolver el máximo + 1
+  };
+
+  const handleSaveAddRow = () => {
+    fetch(`${backendUrl}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(selectedRow),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to add new row");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("New row added:", data);
+        setDataContacts([...dataContacts, selectedRow]); // Actualizar estado local con la fila agregada
+        setIsAddingRow(false); // Cerrar el modo de añadir
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error("Error adding new row:", error);
+        window.location.reload();
+      });
+  };
+
+  const columns = [
+    { field: "j04", headerName: "j04", flex: 0.2 },
+    { field: "j03", headerName: "j03", flex: 0.9 },
+    { field: "cartnomold", headerName: "cartnomold", flex: 1 },
+    {
+      field: "cartref",
+      headerName: "cartref",
+      type: "number",
+      headerAlign: "left",
+      align: "left",
+      flex: 0.4,
+    },
+    { field: "cartrif", headerName: "cartrif", flex: 0.2 },
+    { field: "cartcoord", headerName: "cartcoord", flex: 0.3 },
+    { field: "cartpag", headerName: "cartpag", flex: 1.2 },
+    { field: "cartdescr", headerName: "cartdescr", flex: 1 },
+    { field: "cartdata", headerName: "cartdata", flex: 0.36 },
+    { field: "cartnote", headerName: "cartnote", flex: 1 },
+  ];
   return (
     <Box m="20px">
       <Header title="J04_CARTELLE" subtitle="Data List of J04_cartelle" />
@@ -276,7 +326,7 @@ const J04 = () => {
                     sx={{ display: "flex", alignItems: "center", gap: "5px" }}
                   >
                     Data:{" "}
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         type="date"
                         value={fechaFormateada || ""}
@@ -314,7 +364,7 @@ const J04 = () => {
                   sx={{ display: "flex", alignItems: "center", gap: "5px" }}
                 >
                   Nominativo:
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <Select
                       sx={{ width: "390px", height: "30px" }}
                       value={selectedRow.j03 || ""}
@@ -349,7 +399,7 @@ const J04 = () => {
                   sx={{ display: "flex", alignItems: "center", gap: "5px" }}
                 >
                   Old Name:{" "}
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.cartnomold || ""}
                       onChange={(e) =>
@@ -386,7 +436,7 @@ const J04 = () => {
                   sx={{ display: "flex", alignItems: "center", gap: "5px" }}
                 >
                   Descrizione:{" "}
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.cartdescr || ""}
                       onChange={(e) =>
@@ -422,7 +472,7 @@ const J04 = () => {
                   sx={{ display: "flex", alignItems: "center", gap: "5px" }}
                 >
                   Note:
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       value={selectedRow.cartnote || ""}
                       onChange={(e) =>
@@ -470,7 +520,7 @@ const J04 = () => {
                     sx={{ display: "flex", alignItems: "center", gap: "5px" }}
                   >
                     CartRef:
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         value={selectedRow.cartref || ""}
                         onChange={(e) =>
@@ -507,7 +557,7 @@ const J04 = () => {
                     sx={{ display: "flex", alignItems: "center", gap: "10px" }}
                   >
                     CartRif:
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         value={selectedRow.cartrif || ""}
                         onChange={(e) =>
@@ -549,7 +599,7 @@ const J04 = () => {
                     }}
                   >
                     CartCoord:{" "}
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         value={selectedRow.cartcoord || ""}
                         onChange={(e) =>
@@ -586,7 +636,7 @@ const J04 = () => {
                     sx={{ display: "flex", alignItems: "center", gap: "5px" }}
                   >
                     CartPag:{" "}
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         value={selectedRow.cartpag || ""}
                         onChange={(e) =>
@@ -644,6 +694,30 @@ const J04 = () => {
                     >
                       Save
                     </Button>
+                  )}
+                  {isAddingRow ? (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        handleSaveAddRow();
+                      }}
+                      disabled={!selectedRow.j03}
+                      sx={{ width: "60px" }}
+                    >
+                      Save
+                    </Button>
+                  ) : (
+                    <Box>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleAddRow}
+                        sx={{ width: "60px" }}
+                      >
+                        Add
+                      </Button>
+                    </Box>
                   )}
                 </Box>
               </Grid>

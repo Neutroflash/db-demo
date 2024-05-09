@@ -37,6 +37,7 @@ const Contacts = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [invoiceData, setInvoiceData] = useState(selectedRow);
   const [originalData, setOriginalData] = useState(null);
+  const [isAddingRow, setIsAddingRow] = useState(false);
   const fecha = selectedRow.j2dat ? new Date(selectedRow.j2dat) : null;
   const fecha2 = selectedRow.j2_data_saldo
     ? new Date(selectedRow.j2_data_saldo)
@@ -118,7 +119,7 @@ const Contacts = () => {
     // Actualiza el estado local del selector
     setSelectedJ03(selectedJ03Data);
 
-    if (isEditing) {
+    if (isEditing || isAddingRow) {
       // Actualiza la columna j03 de la fila seleccionada en J02_FAT con el ID encontrado
       fetch(`https://dbapirest.onrender.com/api/v1/j02/${selectedRow.j02}`, {
         method: "PUT",
@@ -173,7 +174,7 @@ const Contacts = () => {
     const selectedJ04 = event.target.value;
     setSelectedJ04(selectedJ04);
 
-    if (isEditing) {
+    if (isEditing || isAddingRow) {
       setSelectedRow((prevRow) => ({
         ...prevRow,
         j04: selectedJ04,
@@ -280,6 +281,72 @@ const Contacts = () => {
         setSelectedRow(updatedData);
       })
       .catch((error) => console.error("Error al actualizar los datos:", error));
+  };
+
+  const handleAddRow = () => {
+    setIsAddingRow(true);
+    setSelectedRow({
+      j02: getLastJ02() + 1,
+      j2num: "",
+      j2dat: "",
+      j03: "",
+      j04: "",
+      j2preset: "",
+      j2imp: "",
+      j2pcnpaia: "",
+      j2cnpaia: "",
+      j2impiva: "",
+      j2iva: "",
+      j2tot: "",
+      j2note: "",
+      j2_data_saldo: "",
+      pag_saldo: "",
+      j2_incas_1: "",
+      j2_incas_2: "",
+      j2_incas_3: "",
+      j2_incassato: "",
+      j2_da_incassare: "",
+      ordid: "",
+      j2_dat_inc_1: "",
+      j2_dat_inc_2: "",
+      j2_dat_pag_contr: "",
+      previs: ""
+    });
+  };
+
+  const getLastJ02 = () => {
+    if (dataContacts.length === 0) {
+      return 1; // Si no hay contactos, comenzar desde 1
+    }
+    const lastJ02 = Math.max(...dataContacts.map((row) => row.j02));
+    return lastJ02 + 1; // Devolver el máximo + 1
+  };
+
+  const handleSaveAddRow = () => {
+    fetch("https://dbapirest.onrender.com/api/v1/j02", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(selectedRow),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to add new row");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("New row added:", data);
+        setDataContacts([...dataContacts, selectedRow]); // Actualizar estado local con la fila agregada
+        setIsAddingRow(false); // Cerrar el modo de añadir
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error("Error adding new row:", error);
+        window.location.reload();
+      })
+
   };
 
   const columns = [
@@ -396,7 +463,7 @@ const Contacts = () => {
                       fullWidth
                       style={{ marginLeft: "10px" }}
                       sx={{ width: "75px" }}
-                      disabled={isEditing}
+                      disabled={isEditing || isAddingRow}
                     >
                       {dataContacts.map((row) => (
                         <MenuItem key={row.j02} value={row.j02}>
@@ -410,7 +477,7 @@ const Contacts = () => {
                     sx={{ display: "flex", alignItems: "center", gap: "5px" }}
                   >
                     J01:{" "}
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <Select
                         variant="outlined"
                         value={selectedRow.j01}
@@ -452,7 +519,7 @@ const Contacts = () => {
 
                   <Typography>
                     J04:
-                    {isEditing ? (
+                    {isEditing || isAddingRow ?  (
                       <Suspense fallback={<div>Loading...</div>}>
                         <Select
                           variant="outlined"
@@ -504,7 +571,7 @@ const Contacts = () => {
                 >
                   <Typography sx={{ display: "flex", alignItems: "center" }}>
                     Num. Fattura:{" "}
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         sx={{
                           width: "115px",
@@ -544,7 +611,7 @@ const Contacts = () => {
 
                   <Typography sx={{ display: "flex", alignItems: "center" }}>
                     Data:{" "}
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         type="date"
                         variant="outlined"
@@ -593,7 +660,7 @@ const Contacts = () => {
                       justifyContent: "space-between",
                     }}
                   >
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <Box
                         sx={{
                           width: "380px",
@@ -654,7 +721,7 @@ const Contacts = () => {
                       justifyContent: "space-between",
                     }}
                   >
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <TextField
                         sx={{ border: "0" }}
                         multiline
@@ -697,7 +764,7 @@ const Contacts = () => {
                   }}
                 >
                   <Typography>J2Imp:</Typography>
-                  {isEditing ? (
+                  {isEditing  || isAddingRow ? (
                     <TextField
                       variant="outlined"
                       size="small"
@@ -729,7 +796,7 @@ const Contacts = () => {
                     </Box>
                   )}
                   <Typography>J2%cnpaia:</Typography>
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       variant="outlined"
                       size="small"
@@ -805,7 +872,7 @@ const Contacts = () => {
                     {selectedRow.j2impiva ? `€ ${selectedRow.j2impiva}` : ""}
                   </Box>
                   <Typography>J2%iva:</Typography>
-                  {isEditing ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       variant="outlined"
                       size="small"
@@ -887,7 +954,7 @@ const Contacts = () => {
                 <Box>
                   <Typography sx={{ display: "flex", alignItems: "center" }}>
                     J03:{" "}
-                    {isEditing ? (
+                    {isEditing || isAddingRow ? (
                       <Select
                         variant="outlined"
                         value={selectedJ03.nomin || ""}
@@ -1110,7 +1177,7 @@ const Contacts = () => {
                         }}
                       >
                         previs:{" "}
-                        {isEditing ? (
+                        {isEditing || isAddingRow ? (
                           <TextField
                             sx={{ width: "100px" }}
                             variant="outlined"
@@ -1153,7 +1220,7 @@ const Contacts = () => {
                         }}
                       >
                         J2-incas-1:{" "}
-                        {isEditing ? (
+                        {isEditing || isAddingRow ? (
                           <TextField
                             sx={{ width: "100px" }}
                             variant="outlined"
@@ -1199,7 +1266,7 @@ const Contacts = () => {
                         }}
                       >
                         J2-incas-2:{" "}
-                        {isEditing ? (
+                        {isEditing || isAddingRow ? (
                           <TextField
                             sx={{ width: "100px" }}
                             variant="outlined"
@@ -1244,7 +1311,7 @@ const Contacts = () => {
                         }}
                       >
                         J2-incas-3:{" "}
-                        {isEditing ? (
+                        {isEditing || isAddingRow ? (
                           <TextField
                             sx={{ width: "100px" }}
                             variant="outlined"
@@ -1355,7 +1422,7 @@ const Contacts = () => {
                         }}
                       >
                         J2-dat pag contr:{" "}
-                        {isEditing ? (
+                        {isEditing || isAddingRow ? (
                           <TextField
                             type="date"
                             variant="outlined"
@@ -1397,7 +1464,7 @@ const Contacts = () => {
                         }}
                       >
                         J2-dat inc-1:{" "}
-                        {isEditing ? (
+                        {isEditing || isAddingRow ? (
                           <TextField
                             type="date"
                             variant="outlined"
@@ -1440,7 +1507,7 @@ const Contacts = () => {
                         }}
                       >
                         J2-dat inc-2:{" "}
-                        {isEditing ? (
+                        {isEditing || isAddingRow ? (
                           <TextField
                             variant="outlined"
                             size="small"
@@ -1482,7 +1549,7 @@ const Contacts = () => {
                         }}
                       >
                         J2-dat saldo:{" "}
-                        {isEditing ? (
+                        {isEditing || isAddingRow ? (
                           <TextField
                             variant="outlined"
                             size="small"
@@ -1519,7 +1586,7 @@ const Contacts = () => {
 
                       <Typography>
                         pag-saldo:{" "}
-                        {isEditing ? (
+                        {isEditing || isAddingRow ? (
                           <Checkbox
                             checked={selectedRow.pag_saldo}
                             color="primary"
@@ -1568,6 +1635,30 @@ const Contacts = () => {
                     >
                       Save
                     </Button>
+                  )}
+                   {isAddingRow ? (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        handleSaveAddRow();
+                      }}
+                      disabled={!selectedRow.j03 || !selectedRow.j04}
+                      sx={{ width: "60px" }}
+                    >
+                      Save
+                    </Button>
+                  ) : (
+                    <Box>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleAddRow}
+                        sx={{ width: "60px" }}
+                      >
+                        Add
+                      </Button>
+                    </Box>
                   )}
                 </Box>
               </Grid>

@@ -36,6 +36,7 @@ const Team = () => {
   const [j04Options, setJ04Options] = useState([]);
   const [selectedJ01, setSelectedJ01] = useState("");
   const [expanded, setExpanded] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const [j03Values, setJ03Values] = useState([]);
@@ -43,11 +44,17 @@ const Team = () => {
   const [isAddingRow, setIsAddingRow] = useState(false);
   const backendUrl = "https://dbapirest.onrender.com/api/v1/postgres";
   const fecha = selectedRow.j1dat ? new Date(selectedRow.j1dat) : null;
-  const fecha2 = selectedRow.j1_av_data ? new Date(selectedRow.j1_av_data): null;
+  const fecha2 = selectedRow.j1_av_data
+    ? new Date(selectedRow.j1_av_data)
+    : null;
   const fechaFormateada = fecha ? fecha.toISOString().split("T")[0] : "";
   const fechaFormateada2 = fecha2 ? fecha2.toISOString().split("T")[0] : "";
   const handleExpandClick = () => {
     setExpanded((prevExpanded) => !prevExpanded);
+  };
+
+  const handleChange = (event) => {
+    setIsChecked(event.target.checked);
   };
 
   useEffect(() => {
@@ -79,14 +86,14 @@ const Team = () => {
   };
 
   const fetchJ03Data = () => {
-    fetch(`https://dbapirest.onrender.com/api/v1/j03`)
+    fetch(backendUrl)
       .then((response) => response.json())
       .then((data) => {
-        setDataJ03(data);
-        const nominValues = data.map((row) => row.nomin);
-        setJ03Values(nominValues);
+        setDataContacts(data);
+        const uniqueJ03Values = [...new Set(data.map((row) => row.j03))];
+        setJ03Values(uniqueJ03Values);
       })
-      .catch((error) => console.error("Error fetching J03 data:", error));
+      .catch((error) => console.error("Error fetching data:", error));
   };
 
   useEffect(() => {
@@ -147,9 +154,12 @@ const Team = () => {
   };
 
   const handleSaveClick = () => {
-    const j1fat_1 = selectedRow.j1fat_1 !== "" ? parseFloat(selectedRow.j1fat_1) : 0;
-    const j1fat_2 = selectedRow.j1fat_2 !== "" ? parseFloat(selectedRow.j1fat_2) : 0;
-    const j1fat_3 = selectedRow.j1fat_3 !== "" ? parseFloat(selectedRow.j1fat_3) : 0;
+    const j1fat_1 =
+      selectedRow.j1fat_1 !== "" ? parseFloat(selectedRow.j1fat_1) : 0;
+    const j1fat_2 =
+      selectedRow.j1fat_2 !== "" ? parseFloat(selectedRow.j1fat_2) : 0;
+    const j1fat_3 =
+      selectedRow.j1fat_3 !== "" ? parseFloat(selectedRow.j1fat_3) : 0;
 
     const j1tot_fat = j1fat_1 + j1fat_2 + j1fat_3;
 
@@ -198,8 +208,7 @@ const Team = () => {
         setSelectedRow(updatedData);
       })
       .catch((error) => console.error("Error al actualizar los datos:", error));
-};
-
+  };
 
   const handleAddRow = () => {
     setIsAddingRow(true);
@@ -220,7 +229,7 @@ const Team = () => {
       j1fat_3: "",
       j1fat_3_rif: "",
       j1tot_fat: "",
-      sel: false,
+      sel: "",
       link_ordine: "",
       j1_avanz: "",
       j1_av_data: "",
@@ -250,13 +259,13 @@ const Team = () => {
       })
       .then((data) => {
         console.log("New row added:", data);
-        // Actualizar el estado o realizar cualquier acción necesaria después de agregar la fila
-        fetchData(); // Actualizar la data
+        setDataContacts([...dataContacts, selectedRow]); // Actualizar estado local con la fila agregada
         setIsAddingRow(false); // Cerrar el modo de añadir
       })
       .catch((error) => {
         console.error("Error adding new row:", error);
-      });
+      })
+
   };
   
 
@@ -1149,7 +1158,7 @@ const Team = () => {
                   sx={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "10px"
+                    gap: "10px",
                   }}
                 >
                   {/* Link-ordine */}
@@ -1200,7 +1209,7 @@ const Team = () => {
                       alignItems: "center",
                       marginLeft: "20px",
                       gap: "15px",
-                      fontSize: "11px"
+                      fontSize: "11px",
                     }}
                   >
                     Avanzamento:{" "}
@@ -1384,7 +1393,9 @@ const Team = () => {
                     <Button
                       variant="contained"
                       color="primary"
-                      onClick={handleSaveAddRow}
+                      onClick={() => {
+                        handleSaveAddRow();
+                      }}
                       disabled={!selectedRow.j03 || !selectedRow.j04}
                       sx={{ width: "60px" }}
                     >

@@ -102,7 +102,7 @@ const Invoices = () => {
   const handleAddRow = () => {
     setIsAddingRow(true);
     setSelectedRow({
-      j03: getLastJ03() + 1,
+      j03: getLastJ03(),
       nomin: "",
       plva: "",
       cfisc: "",
@@ -114,6 +114,16 @@ const Invoices = () => {
       codident: "",
       pec: "",
     });
+  };
+
+  const handleCancelAddRow = () => {
+    const firstRow = dataContacts.length > 0 ? dataContacts[0] : null;
+    setIsAddingRow(false);
+
+    // Restaurar la fila original
+    if (firstRow) {
+      setSelectedRow(firstRow);
+    }
   };
 
   const getLastJ03 = () => {
@@ -662,18 +672,14 @@ const Invoices = () => {
                   )}
                 </Typography>
               </Grid>
-              <Grid item xs={2} sx={{ display: "flex", flexDirection: "column" }}>
+              <Grid
+                item
+                xs={2}
+                sx={{ display: "flex", flexDirection: "column" }}
+              >
                 <Box
-                  sx={{ display: "flex", flexDirection: "column", gap: "20px" }}
+                  sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
                 >
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleEditClick}
-                    sx={{ width: "60px" }}
-                  >
-                    Edit
-                  </Button>
                   {isEditing && (
                     <Button
                       variant="contained"
@@ -684,29 +690,47 @@ const Invoices = () => {
                       Save
                     </Button>
                   )}
-                  {isAddingRow ? (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        handleSaveAddRow();
-                      }}
-                      
-                      sx={{ width: "60px" }}
-                    >
-                      Save
-                    </Button>
-                  ) : (
-                    <Box>
+                  {isAddingRow && (
+                    <Box sx={{ display: "flex", gap: "5px", flexDirection: "column" }}>
                       <Button
                         variant="contained"
                         color="primary"
-                        onClick={handleAddRow}
+                        onClick={() => {
+                          handleSaveAddRow();
+                        }}
                         sx={{ width: "60px" }}
                       >
-                        Add
+                        Save
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={handleCancelAddRow}
+                        sx={{ width: "60px" }}
+                      >
+                        Cancel
                       </Button>
                     </Box>
+                  )}
+                  {!isEditing && !isAddingRow && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleEditClick}
+                      sx={{ width: "60px" }}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  {!isEditing && !isAddingRow && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleAddRow}
+                      sx={{ width: "60px" }}
+                    >
+                      Add
+                    </Button>
                   )}
                 </Box>
               </Grid>

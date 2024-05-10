@@ -196,7 +196,7 @@ const Contacts = () => {
     const selectedJ01 = event.target.value;
     setSelectedJ01(selectedJ01);
 
-    if (isEditing) {
+    if (isEditing || isAddingRow) {
       setSelectedRow((prevRow) => ({
         ...prevRow,
         j01: selectedJ01,
@@ -285,33 +285,65 @@ const Contacts = () => {
 
   const handleAddRow = () => {
     setIsAddingRow(true);
-    setSelectedRow({
-      j02: getLastJ02() + 1,
+    const newJ02 = getLastJ02();
+
+    // Realizar los cálculos necesarios
+    const j2imp = parseFloat(selectedRow.j2imp) || 0;
+    const j2pcnpaia = parseFloat(selectedRow.j2pcnpaia) || 0;
+    const j2piva = parseFloat(selectedRow.j2piva) || 0;
+
+    const j2cnpaia = j2imp * j2pcnpaia;
+    const j2impiva = j2cnpaia + j2imp;
+    const j2iva = j2impiva * (j2piva / 100); // Dividir por 100 para obtener el porcentaje
+    const j2tot = j2imp + j2iva + j2cnpaia;
+
+    // Calcular j2_incassato
+    const j2_incassato =
+      parseFloat(selectedRow.j2_incas_1) +
+      parseFloat(selectedRow.j2_incas_2) +
+      parseFloat(selectedRow.j2_incas_3);
+
+    // Calcular j2_da_incassare
+    const j2_da_incassare = j2tot - j2_incassato;
+
+    // Crear la nueva fila con los cálculos realizados
+    const newRow = {
+      j02: newJ02,
       j2num: "",
       j2dat: "",
       j03: "",
       j04: "",
       j2preset: "",
-      j2imp: "",
-      j2pcnpaia: "",
-      j2cnpaia: "",
-      j2impiva: "",
-      j2iva: "",
-      j2tot: "",
+      j2imp: j2imp.toFixed(2),
+      j2pcnpaia: j2pcnpaia.toFixed(2),
+      j2cnpaia: j2cnpaia.toFixed(2),
+      j2impiva: j2impiva.toFixed(2),
+      j2piva: j2piva.toFixed(2),
+      j2iva: j2iva.toFixed(2),
+      j2tot: j2tot.toFixed(2),
       j2note: "",
       j2_data_saldo: "",
       pag_saldo: "",
       j2_incas_1: "",
       j2_incas_2: "",
       j2_incas_3: "",
-      j2_incassato: "",
-      j2_da_incassare: "",
+      j2_incassato: j2_incassato.toFixed(2),
+      j2_da_incassare: j2_da_incassare.toFixed(2),
       ordid: "",
       j2_dat_inc_1: "",
       j2_dat_inc_2: "",
       j2_dat_pag_contr: "",
-      previs: ""
-    });
+      previs: "",
+    };
+
+    // Actualizar el estado local de los datos de la factura
+    setDataContacts([...dataContacts, newRow]);
+    setSelectedRow(newRow);
+    setSelectedId(newJ02);
+  };
+
+  const handleCancelAddRow = () => {
+    window.location.reload();
   };
 
   const getLastJ02 = () => {
@@ -345,8 +377,7 @@ const Contacts = () => {
       .catch((error) => {
         console.error("Error adding new row:", error);
         window.location.reload();
-      })
-
+      });
   };
 
   const columns = [
@@ -509,7 +540,7 @@ const Contacts = () => {
                           minHeight: "50px",
                           borderRadius: "4px",
                           textAlign: "center",
-                          alignItems: "center"
+                          alignItems: "center",
                         }}
                       >
                         {selectedRow.j01}
@@ -519,7 +550,7 @@ const Contacts = () => {
 
                   <Typography>
                     J04:
-                    {isEditing || isAddingRow ?  (
+                    {isEditing || isAddingRow ? (
                       <Suspense fallback={<div>Loading...</div>}>
                         <Select
                           variant="outlined"
@@ -764,7 +795,7 @@ const Contacts = () => {
                   }}
                 >
                   <Typography>J2Imp:</Typography>
-                  {isEditing  || isAddingRow ? (
+                  {isEditing || isAddingRow ? (
                     <TextField
                       variant="outlined"
                       size="small"
@@ -1616,16 +1647,8 @@ const Contacts = () => {
                 sx={{ display: "flex", flexDirection: "column" }}
               >
                 <Box
-                  sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
+                  sx={{ display: "flex", flexDirection: "column", gap: "20px" }}
                 >
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleEditClick}
-                    sx={{ width: "60px" }}
-                  >
-                    Edit
-                  </Button>
                   {isEditing && (
                     <Button
                       variant="contained"
@@ -1636,29 +1659,46 @@ const Contacts = () => {
                       Save
                     </Button>
                   )}
-                   {isAddingRow ? (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        handleSaveAddRow();
-                      }}
-                      disabled={!selectedRow.j03 || !selectedRow.j04}
-                      sx={{ width: "60px" }}
-                    >
-                      Save
-                    </Button>
-                  ) : (
-                    <Box>
+                  {isAddingRow && (
+                    <Box sx={{ display: "flex", gap: "5px", flexDirection: "column" }}>
                       <Button
                         variant="contained"
                         color="primary"
-                        onClick={handleAddRow}
+                        onClick={handleSaveAddRow}
+                        disabled={!selectedRow.j2num}
                         sx={{ width: "60px" }}
                       >
-                        Add
+                        Save
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={handleCancelAddRow}
+                        sx={{ width: "60px" }}
+                      >
+                        Cancel
                       </Button>
                     </Box>
+                  )}
+                  {!isEditing && !isAddingRow && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleEditClick}
+                      sx={{ width: "60px" }}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  {!isEditing && !isAddingRow && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleAddRow}
+                      sx={{ width: "60px" }}
+                    >
+                      Add
+                    </Button>
                   )}
                 </Box>
               </Grid>

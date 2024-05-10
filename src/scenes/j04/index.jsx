@@ -165,7 +165,6 @@ const J04 = () => {
       .catch((error) => console.error("Error al actualizar los datos:", error));
   };
 
-
   const handleAddRow = () => {
     setIsAddingRow(true);
     setSelectedRow({
@@ -179,6 +178,16 @@ const J04 = () => {
       cartdata: "",
       cartnote: "",
     });
+  };
+
+  const handleCancelAddRow = () => {
+    const firstRow = dataContacts.length > 0 ? dataContacts[0] : null;
+    setIsAddingRow(false);
+
+    // Restaurar la fila original
+    if (firstRow) {
+      setSelectedRow(firstRow);
+    }
   };
 
   const getLastJ04 = () => {
@@ -677,14 +686,6 @@ const J04 = () => {
                 <Box
                   sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
                 >
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleEditClick}
-                    sx={{ width: "60px" }}
-                  >
-                    Edit
-                  </Button>
                   {isEditing && (
                     <Button
                       variant="contained"
@@ -695,29 +696,48 @@ const J04 = () => {
                       Save
                     </Button>
                   )}
-                  {isAddingRow ? (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        handleSaveAddRow();
-                      }}
-                      disabled={!selectedRow.j03}
-                      sx={{ width: "60px" }}
-                    >
-                      Save
-                    </Button>
-                  ) : (
-                    <Box>
+                  {isAddingRow && (
+                    <Box sx={{ display: "flex", gap: "5px", flexDirection: "column" }}>
                       <Button
                         variant="contained"
                         color="primary"
-                        onClick={handleAddRow}
+                        onClick={() => {
+                          handleSaveAddRow();
+                        }}
+                        disabled={!selectedRow.j03}
                         sx={{ width: "60px" }}
                       >
-                        Add
+                        Save
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={handleCancelAddRow}
+                        sx={{ width: "60px" }}
+                      >
+                        Cancel
                       </Button>
                     </Box>
+                  )}
+                  {!isEditing && !isAddingRow && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleEditClick}
+                      sx={{ width: "60px" }}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  {!isEditing && !isAddingRow && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleAddRow}
+                      sx={{ width: "60px" }}
+                    >
+                      Add
+                    </Button>
                   )}
                 </Box>
               </Grid>

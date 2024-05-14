@@ -84,16 +84,17 @@ const Team = () => {
       })
       .catch((error) => console.error("Error fetching data:", error));
   };
-
+  
+  
   const fetchJ03Data = () => {
-    fetch(backendUrl)
+    fetch(`https://dbapirest.onrender.com/api/v1/j03`)
       .then((response) => response.json())
       .then((data) => {
-        setDataContacts(data);
-        const uniqueJ03Values = [...new Set(data.map((row) => row.j03))];
-        setJ03Values(uniqueJ03Values);
+        setDataJ03(data);
+        const nominValues = data.map((row) => row.nomin);
+        setJ03Values(nominValues);
       })
-      .catch((error) => console.error("Error fetching data:", error));
+      .catch((error) => console.error("Error fetching J03 data:", error));
   };
 
   useEffect(() => {
@@ -111,13 +112,13 @@ const Team = () => {
         j03: value,
       }));
     } else {
-      const rowData = getRowDataByJ03(value);
       setSelectedRow((prev) => ({
-        ...rowData, // Esto asignará los valores de rowData, o un objeto vacío si rowData es falsy
+        ...prev,
         j03: value,
       }));
     }
   };
+
 
   const handleJ04Change = (value) => {
     if (isEditing || isAddingRow) {
@@ -147,12 +148,7 @@ const Team = () => {
       }));
     }
   };
-
-  const getRowDataByJ03 = (j03Value) => {
-    const selectedRow = dataContacts.find((row) => row.j03 === j03Value);
-    return selectedRow ? selectedRow : {};
-  };
-
+  
   const handleSaveClick = () => {
     const j1fat_1 =
       selectedRow.j1fat_1 !== "" ? parseFloat(selectedRow.j1fat_1) : 0;

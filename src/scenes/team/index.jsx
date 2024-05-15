@@ -42,6 +42,7 @@ const Team = () => {
   const [j03Values, setJ03Values] = useState([]);
   const [dataJ03, setDataJ03] = useState([]);
   const [isAddingRow, setIsAddingRow] = useState(false);
+  const [selectedNomin, setSelectedNomin] = useState("");
   const backendUrl = "https://dbapirest.onrender.com/api/v1/postgres";
   const fecha = selectedRow.j1dat ? new Date(selectedRow.j1dat) : null;
   const fecha2 = selectedRow.j1_av_data
@@ -79,13 +80,10 @@ const Team = () => {
       .then((response) => response.json())
       .then((data) => {
         setDataContacts(data);
-        const uniqueJ03Values = [...new Set(data.map((row) => row.j03))];
-        setJ03Values(uniqueJ03Values);
       })
       .catch((error) => console.error("Error fetching data:", error));
   };
-  
-  
+
   const fetchJ03Data = () => {
     fetch(`https://dbapirest.onrender.com/api/v1/j03`)
       .then((response) => response.json())
@@ -112,8 +110,9 @@ const Team = () => {
         j03: value,
       }));
     } else {
+      const rowData = getRowDataByJ03(value);
       setSelectedRow((prev) => ({
-        ...prev,
+        ...rowData,
         j03: value,
       }));
     }
@@ -148,7 +147,13 @@ const Team = () => {
       }));
     }
   };
-  
+
+  const getRowDataByJ03 = (j03Value) => {
+    const selectedRow = dataContacts.find((row) => row.j03 === j03Value);
+    return selectedRow ? selectedRow : {};
+  };
+
+
   const handleSaveClick = () => {
     const j1fat_1 =
       selectedRow.j1fat_1 !== "" ? parseFloat(selectedRow.j1fat_1) : 0;
@@ -1390,7 +1395,13 @@ const Team = () => {
                     </Button>
                   )}
                   {isAddingRow && (
-                    <Box sx={{ display: "flex", gap: "5px", flexDirection: "column" }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: "5px",
+                        flexDirection: "column",
+                      }}
+                    >
                       <Button
                         variant="contained"
                         color="primary"
